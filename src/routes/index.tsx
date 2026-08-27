@@ -1,24 +1,335 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, type FormEvent } from "react";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
+import board from "@/assets/board.jpg";
+import paper from "@/assets/paper.jpg";
+import mapImg from "@/assets/map.jpg";
+import photo1 from "@/assets/photo1.jpg";
+import photo2 from "@/assets/photo2.jpg";
+import photo3 from "@/assets/photo3.jpg";
+import photo4 from "@/assets/photo4.jpg";
+
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Contact Intel X — Uncover the Network" },
+      {
+        name: "description",
+        content:
+          "Have a lead? Contact the Intel X task force. Send a message to our investigation team or reach us by email and phone.",
+      },
+      { property: "og:title", content: "Contact Intel X — Uncover the Network" },
+      {
+        property: "og:description",
+        content:
+          "Have a lead? Contact the Intel X task force. Send a message to our investigation team or reach us by email and phone.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: ContactPage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+const NAV = ["HOME", "STORY", "CLUES", "LEADERBOARD", "RULEBOOK", "CONTACT US"];
+
+function Pin({ className = "" }: { className?: string }) {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
+    <span className={`absolute z-30 h-4 w-4 ${className}`} aria-hidden="true">
+      <span className="block h-4 w-4 rounded-full bg-[oklch(0.45_0.19_27)] shadow-[inset_-1px_-2px_3px_rgba(0,0,0,0.55),inset_2px_2px_3px_rgba(255,255,255,0.35),0_4px_6px_rgba(0,0,0,0.7)]" />
+    </span>
+  );
+}
+
+function Photo({
+  src,
+  alt,
+  className,
+  rotate,
+}: {
+  src: string;
+  alt: string;
+  className: string;
+  rotate: string;
+}) {
+  return (
+    <figure
+      className={`absolute photo-shadow bg-[oklch(0.86_0.03_85)] p-[3%] pb-[7%] ${className}`}
+      style={{ transform: `rotate(${rotate})` }}
     >
       <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+        src={src}
+        alt={alt}
+        loading="lazy"
+        className="h-full w-full object-cover contrast-[0.9] saturate-[0.45] brightness-[0.8]"
       />
-    </div>
+      <span className="pointer-events-none absolute inset-0 bg-[oklch(0.2_0.03_60)]/25 mix-blend-multiply" />
+    </figure>
+  );
+}
+
+function ContactPage() {
+  const [sent, setSent] = useState(false);
+
+  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSent(true);
+  };
+
+  return (
+    <main className="min-h-screen bg-[oklch(0.09_0.005_60)] p-3 md:p-6">
+      <div className="mx-auto max-w-[1500px] border border-[oklch(0.3_0.02_70)]/70 bg-board">
+        {/* HEADER */}
+        <header className="relative z-40 flex items-center justify-between border-b border-[oklch(0.3_0.02_70)]/50 bg-[oklch(0.11_0.008_60)] px-6 py-3 md:px-10">
+          <div>
+            <div className="font-condensed text-xl font-500 tracking-[0.18em] text-[oklch(0.93_0.01_80)] md:text-2xl">
+              INTEL X
+            </div>
+            <div className="font-condensed text-[9px] tracking-[0.32em] text-[oklch(0.62_0.02_70)] md:text-[10px]">
+              UNCOVER THE NETWORK
+            </div>
+          </div>
+          <nav className="flex items-center gap-5 font-condensed text-[11px] tracking-[0.16em] md:gap-9 md:text-xs">
+            {NAV.map((item) => {
+              const active = item === "CONTACT US";
+              return (
+                <a
+                  key={item}
+                  href="#"
+                  className={
+                    active
+                      ? "border-b border-gold pb-1 text-gold"
+                      : "pb-1 text-[oklch(0.82_0.01_80)] transition-colors hover:text-gold"
+                  }
+                >
+                  {item}
+                </a>
+              );
+            })}
+          </nav>
+        </header>
+
+        {/* BOARD */}
+        <div
+          className="board-vignette relative w-full overflow-hidden"
+          style={{
+            backgroundImage: `url(${board})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            aspectRatio: "1500 / 830",
+            minHeight: "560px",
+          }}
+        >
+          {/* red strings */}
+          <svg
+            className="pointer-events-none absolute inset-0 z-20 h-full w-full"
+            viewBox="0 0 1000 560"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <g
+              stroke="oklch(0.4 0.17 27)"
+              strokeWidth="1.6"
+              fill="none"
+              opacity="0.9"
+            >
+              <path d="M175 120 L340 200" />
+              <path d="M340 200 L520 148" />
+              <path d="M340 200 L470 250" />
+              <path d="M340 200 L200 330" />
+              <path d="M340 200 L400 320" />
+              <path d="M400 320 L200 330" />
+              <path d="M400 320 L240 430" />
+              <path d="M240 430 L128 448" />
+              <path d="M470 250 L520 148" />
+            </g>
+          </svg>
+
+          {/* MAP */}
+          <img
+            src={mapImg}
+            alt="Weathered field map pinned to the board"
+            loading="lazy"
+            className="paper-shadow absolute right-[1%] top-[7%] z-0 w-[16%] rotate-[3deg] opacity-90 brightness-[0.72] sepia-[0.35]"
+          />
+
+          {/* CONTACT NOTE */}
+          <div
+            className="paper-shadow absolute left-[5%] top-[5%] z-10 w-[22%] min-w-[210px] rotate-[-3deg] px-6 py-7"
+            style={{
+              backgroundImage: `url(${paper})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <Pin className="left-1/2 top-[-8px] -translate-x-1/2" />
+            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.35_0.05_60)]/12 mix-blend-multiply" />
+            <h1 className="font-typewriter text-2xl tracking-wide text-ink md:text-[2rem]">
+              CONTACT US
+            </h1>
+            <p className="mt-4 font-typewriter text-[13px] leading-6 text-ink/85">
+              Have a lead? Want to
+              <br />
+              collaborate?
+              <br />
+              We&apos;re listening.
+            </p>
+          </div>
+
+          {/* PHOTOGRAPHS */}
+          <Photo
+            src={photo3}
+            alt="Night surveillance of an airport cargo terminal"
+            className="left-[26%] top-[4%] z-10 h-[26%] w-[13%]"
+            rotate="2deg"
+          />
+          <Photo
+            src={photo2}
+            alt="Cargo aircraft parked on the tarmac"
+            className="left-[31%] top-[35%] z-10 h-[26%] w-[13%]"
+            rotate="-3deg"
+          />
+          <Photo
+            src={photo1}
+            alt="Airliner on final approach at dusk"
+            className="left-[9%] top-[40%] z-10 h-[27%] w-[15%]"
+            rotate="-2deg"
+          />
+          <Photo
+            src={photo4}
+            alt="Aerial reconnaissance shot of an airfield"
+            className="left-[17%] top-[58%] z-10 h-[32%] w-[13%]"
+            rotate="4deg"
+          />
+          <Photo
+            src={photo3}
+            alt="Evidence photograph of a hangar at night"
+            className="left-[36%] top-[68%] z-10 h-[26%] w-[8%]"
+            rotate="-5deg"
+          />
+
+          {/* PINS on the string network */}
+          <Pin className="left-[33.5%] top-[35%]" />
+          <Pin className="left-[19.5%] top-[58%]" />
+          <Pin className="left-[46.5%] top-[44%]" />
+          <Pin className="left-[23.5%] top-[76%]" />
+
+          {/* COORDINATE NOTE */}
+          <div
+            className="paper-shadow absolute bottom-[8%] left-[4%] z-10 w-[11%] min-w-[110px] rotate-[-4deg] px-4 py-3"
+            style={{
+              backgroundImage: `url(${paper})`,
+              backgroundSize: "cover",
+            }}
+          >
+            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.45_0.09_75)]/20 mix-blend-multiply" />
+            <p className="font-hand text-lg leading-tight text-ink">
+              30.3466° N
+              <br />
+              76.5121° E
+            </p>
+          </div>
+
+          {/* MAIN DOCUMENT */}
+          <section
+            className="paper-shadow absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[330px] rotate-[-0.6deg] px-8 py-6"
+            style={{
+              backgroundImage: `url(${paper})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <Pin className="left-[6%] top-[-8px]" />
+            <Pin className="right-[6%] top-[-8px]" />
+            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.4_0.05_60)]/12 mix-blend-multiply" />
+
+            <h2 className="font-typewriter text-lg tracking-wide text-ink">
+              SEND US A MESSAGE
+            </h2>
+
+            <form onSubmit={onSubmit} className="mt-4 space-y-3">
+              {(["NAME", "EMAIL", "SUBJECT"] as const).map((label) => (
+                <div key={label}>
+                  <input
+                    required
+                    type={label === "EMAIL" ? "email" : "text"}
+                    aria-label={label}
+                    placeholder={label}
+                    className="paper-field w-full px-3 py-2 font-typewriter text-[11px] tracking-wide"
+                  />
+                </div>
+              ))}
+              <textarea
+                required
+                rows={4}
+                aria-label="MESSAGE"
+                placeholder="MESSAGE"
+                className="paper-field w-full resize-none px-3 py-2 font-typewriter text-[11px] tracking-wide"
+              />
+              <div className="flex justify-center pt-1">
+                <button
+                  type="submit"
+                  className="bg-[oklch(0.22_0.01_60)] px-10 py-2 font-typewriter text-[11px] tracking-[0.18em] text-[oklch(0.92_0.02_85)] shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-colors hover:bg-[oklch(0.28_0.01_60)]"
+                >
+                  {sent ? "SENT" : "SUBMIT"}
+                </button>
+              </div>
+            </form>
+
+            <h3 className="mt-6 border-b border-ink/30 pb-1 font-typewriter text-base tracking-wide text-ink">
+              REACH US AT
+            </h3>
+            <ul className="mt-3 space-y-2 font-typewriter text-[11px] leading-5 text-ink/90">
+              <li className="flex items-start gap-3">
+                <MailIcon />
+                <a href="mailto:intelx.taskforce@gmail.com" className="hover:underline">
+                  intelx.taskforce@gmail.com
+                </a>
+              </li>
+              <li className="flex items-start gap-3">
+                <PhoneIcon />
+                <span>+91 98765 43210</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <PinIcon />
+                <span>
+                  Thapar Institute of Engineering,
+                  <br />
+                  Patiala
+                </span>
+              </li>
+            </ul>
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+const iconClass = "mt-[2px] h-3.5 w-3.5 shrink-0 stroke-ink";
+
+function MailIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" className={iconClass} aria-hidden="true">
+      <rect x="2.5" y="5" width="19" height="14" />
+      <path d="M2.5 6l9.5 7 9.5-7" />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" className={iconClass} aria-hidden="true">
+      <path d="M5 3h4l2 5-2.5 1.5a12 12 0 006 6L16 13l5 2v4a2 2 0 01-2 2A16 16 0 013 5a2 2 0 012-2z" />
+    </svg>
+  );
+}
+
+function PinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" className={iconClass} aria-hidden="true">
+      <path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
   );
 }
