@@ -261,17 +261,18 @@ function ContactPage() {
           </div>
 
           {/* MAIN DOCUMENT */}
-          <section
-            className="paper-shadow absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[330px] rotate-[-0.6deg] px-8 py-6"
-            style={{
-              backgroundImage: `url(${paper})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
+          <section className="absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[330px] rotate-[-0.6deg] px-8 py-6">
+            <span
+              className="paper-aged pointer-events-none absolute inset-0 -z-10"
+              style={{
+                backgroundImage: `url(${paperDoc})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
             <Pin className="left-[6%] top-[-8px]" />
             <Pin className="right-[6%] top-[-8px]" />
-            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.55_0.06_70)]/25 mix-blend-multiply" />
+
 
             <h2 className="font-typewriter text-lg tracking-wide text-ink">
               SEND US A MESSAGE
