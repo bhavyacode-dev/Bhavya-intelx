@@ -132,20 +132,23 @@ function ContactPage() {
             aria-hidden="true"
           >
             <g
-              stroke="oklch(0.4 0.17 27)"
-              strokeWidth="1.6"
+              stroke="oklch(0.42 0.16 27)"
+              strokeWidth="1.3"
               fill="none"
-              opacity="0.9"
+              opacity="0.85"
+              strokeLinecap="round"
             >
-              <path d="M175 120 L340 200" />
-              <path d="M340 200 L520 148" />
-              <path d="M340 200 L470 250" />
-              <path d="M340 200 L200 330" />
-              <path d="M340 200 L400 320" />
-              <path d="M400 320 L200 330" />
-              <path d="M400 320 L240 430" />
-              <path d="M240 430 L128 448" />
-              <path d="M470 250 L520 148" />
+              <path d="M180 130 L330 185" />
+              <path d="M330 185 L430 120" />
+              <path d="M330 185 L500 165" />
+              <path d="M330 185 L470 300" />
+              <path d="M330 185 L190 320" />
+              <path d="M330 185 L385 330" />
+              <path d="M385 330 L190 320" />
+              <path d="M385 330 L470 300" />
+              <path d="M385 330 L255 430" />
+              <path d="M255 430 L135 470" />
+              <path d="M385 330 L400 445" />
             </g>
           </svg>
 
@@ -154,12 +157,12 @@ function ContactPage() {
             src={mapImg}
             alt="Weathered field map pinned to the board"
             loading="lazy"
-            className="paper-shadow absolute right-[1%] top-[7%] z-0 w-[16%] rotate-[3deg] opacity-90 brightness-[0.72] sepia-[0.35]"
+            className="paper-shadow absolute right-[0.5%] top-[10%] z-0 w-[17%] rotate-[4deg] opacity-90 brightness-[0.7] sepia-[0.35]"
           />
 
           {/* CONTACT NOTE */}
           <div
-            className="paper-shadow absolute left-[5%] top-[5%] z-10 w-[22%] min-w-[210px] rotate-[-3deg] px-6 py-7"
+            className="paper-shadow absolute left-[5%] top-[5%] z-10 w-[21%] min-w-[210px] rotate-[-3deg] px-6 py-6"
             style={{
               backgroundImage: `url(${paper})`,
               backgroundSize: "cover",
@@ -168,10 +171,10 @@ function ContactPage() {
           >
             <Pin className="left-1/2 top-[-8px] -translate-x-1/2" />
             <span className="pointer-events-none absolute inset-0 bg-[oklch(0.35_0.05_60)]/12 mix-blend-multiply" />
-            <h1 className="font-typewriter text-2xl tracking-wide text-ink md:text-[2rem]">
+            <h1 className="font-typewriter text-2xl tracking-wide text-ink md:text-[1.9rem]">
               CONTACT US
             </h1>
-            <p className="mt-4 font-typewriter text-[13px] leading-6 text-ink/85">
+            <p className="mt-4 font-typewriter text-[12px] leading-6 text-ink/85">
               Have a lead? Want to
               <br />
               collaborate?
@@ -184,39 +187,43 @@ function ContactPage() {
           <Photo
             src={photo3}
             alt="Night surveillance of an airport cargo terminal"
-            className="left-[26%] top-[4%] z-10 h-[26%] w-[13%]"
+            className="left-[27%] top-[3%] z-10 w-[14%]"
             rotate="2deg"
           />
           <Photo
             src={photo2}
             alt="Cargo aircraft parked on the tarmac"
-            className="left-[31%] top-[35%] z-10 h-[26%] w-[13%]"
+            className="left-[29%] top-[38%] z-10 w-[13%]"
             rotate="-3deg"
           />
           <Photo
             src={photo1}
             alt="Airliner on final approach at dusk"
-            className="left-[9%] top-[40%] z-10 h-[27%] w-[15%]"
+            className="left-[8%] top-[44%] z-10 w-[16%]"
             rotate="-2deg"
           />
           <Photo
             src={photo4}
             alt="Aerial reconnaissance shot of an airfield"
-            className="left-[17%] top-[58%] z-10 h-[32%] w-[13%]"
+            className="left-[19%] top-[62%] z-10 w-[12%]"
             rotate="4deg"
+            ratio="3 / 4"
           />
           <Photo
             src={photo3}
             alt="Evidence photograph of a hangar at night"
-            className="left-[36%] top-[68%] z-10 h-[26%] w-[8%]"
+            className="left-[36%] top-[63%] z-10 w-[7.5%]"
             rotate="-5deg"
+            ratio="3 / 5"
           />
 
           {/* PINS on the string network */}
-          <Pin className="left-[33.5%] top-[35%]" />
-          <Pin className="left-[19.5%] top-[58%]" />
-          <Pin className="left-[46.5%] top-[44%]" />
-          <Pin className="left-[23.5%] top-[76%]" />
+          <Pin className="left-[32.4%] top-[31.4%]" />
+          <Pin className="left-[18.4%] top-[56.4%]" />
+          <Pin className="left-[46.4%] top-[52.6%]" />
+          <Pin className="left-[24.9%] top-[75.8%]" />
+          <Pin className="left-[38%] top-[57.9%]" />
+
 
           {/* COORDINATE NOTE */}
           <div
