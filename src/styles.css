@@ -166,7 +166,6 @@
 
 /* Aged physical paper: darkened worn edges, stains, creases, uneven edge line */
 @utility paper-aged {
-  position: relative;
   background-color: oklch(0.83 0.05 82);
   background-blend-mode: multiply;
   box-shadow:
