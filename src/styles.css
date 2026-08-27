@@ -263,3 +263,167 @@
     color: rgba(60, 45, 30, 0.5);
   }
 }
+
+/* Realistic Viscous Blood Flow in Investigation Threads */
+@keyframes bloodViscousFlow {
+  0% {
+    stroke-dashoffset: 300;
+  }
+  20% {
+    stroke-dashoffset: 245;
+  }
+  38% {
+    stroke-dashoffset: 205;
+  }
+  55% {
+    stroke-dashoffset: 135;
+  }
+  72% {
+    stroke-dashoffset: 80;
+  }
+  88% {
+    stroke-dashoffset: 30;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bloodDensityPulse {
+  0%, 100% {
+    opacity: 0.65;
+  }
+  30% {
+    opacity: 0.92;
+  }
+  60% {
+    opacity: 0.60;
+  }
+  80% {
+    opacity: 0.88;
+  }
+}
+
+@keyframes specularSheen {
+  0%, 100% {
+    opacity: 0.12;
+  }
+  35% {
+    opacity: 0.40;
+  }
+  70% {
+    opacity: 0.18;
+  }
+}
+
+.blood-flow-viscous {
+  animation: bloodViscousFlow var(--flow-duration, 11s) cubic-bezier(0.42, 0, 0.58, 1) infinite;
+  animation-delay: var(--flow-delay, 0s);
+  stroke-linecap: round;
+}
+
+.blood-flow-density {
+  animation:
+    bloodViscousFlow var(--flow-duration, 11s) cubic-bezier(0.42, 0, 0.58, 1) infinite,
+    bloodDensityPulse var(--pulse-duration, 5s) ease-in-out infinite;
+  animation-delay: var(--flow-delay, 0s), var(--pulse-delay, 0s);
+  stroke-linecap: round;
+}
+
+.blood-flow-specular {
+  animation:
+    bloodViscousFlow var(--flow-duration, 11s) cubic-bezier(0.42, 0, 0.58, 1) infinite,
+    specularSheen var(--pulse-duration, 5s) ease-in-out infinite;
+  animation-delay: var(--flow-delay, 0s), var(--pulse-delay, 0s);
+  stroke-linecap: round;
+}
+
+/* Interactive Thread & Evidence Board Enhancements */
+@keyframes pinPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(190, 30, 30, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(190, 30, 30, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(190, 30, 30, 0);
+  }
+}
+
+@keyframes modalBackdropFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+@keyframes modalContentZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.93) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-backdrop-anim {
+  animation: modalBackdropFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.modal-content-anim {
+  animation: modalContentZoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.pin-active-ring {
+  animation: pinPulse 2s infinite;
+}
+
+.evidence-interactive {
+  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.28s cubic-bezier(0.25, 1, 0.5, 1),
+              opacity 0.28s ease,
+              filter 0.28s ease;
+}
+
+.evidence-dimmed {
+  opacity: 0.42 !important;
+  filter: grayscale(35%) brightness(0.85);
+}
+
+.evidence-highlighted {
+  opacity: 1 !important;
+  z-index: 35 !important;
+  filter: brightness(1.05) contrast(1.05);
+}
+
+.thread-highlighted {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 1.5px rgba(220, 40, 40, 0.7));
+}
+
+.thread-dimmed {
+  opacity: 0.25 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blood-flow-viscous,
+  .blood-flow-density,
+  .blood-flow-specular,
+  .modal-backdrop-anim,
+  .modal-content-anim,
+  .pin-active-ring {
+    animation: none !important;
+    stroke-dashoffset: 0 !important;
+    transition: none !important;
+  }
+}
+
+
+

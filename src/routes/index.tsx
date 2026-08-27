@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, useCallback, type FormEvent } from "react";
 
 import board from "@/assets/board.jpg";
 import paper from "@/assets/paper.jpg";
@@ -36,67 +36,757 @@ export const Route = createFileRoute("/")({
 
 const NAV = ["HOME", "STORY", "CLUES", "LEADERBOARD", "RULEBOOK", "CONTACT US"];
 
-function Pin({ className = "" }: { className?: string }) {
+/* -------------------------------------------------------------------------- */
+/*                                EVIDENCE GRAPH                              */
+/* -------------------------------------------------------------------------- */
+
+interface EvidenceItem {
+  id: string;
+  title: string;
+  type: "photo" | "document" | "map";
+  classification: string;
+  timestamp: string;
+  description: string;
+  notes: string[];
+  image: string;
+  ratio?: string;
+  connectedPins: string[];
+  connectedThreads: number[];
+  connectedEvidenceIds: string[];
+}
+
+const EVIDENCE_DATA: Record<string, EvidenceItem> = {
+  "photo-terminal": {
+    id: "photo-terminal",
+    title: "CARGO TERMINAL PERIMETER",
+    type: "photo",
+    classification: "TOP SECRET // SURVEILLANCE FEED",
+    timestamp: "23:42 HRS — WEST APRON",
+    description:
+      "Night surveillance capture of the cargo terminal western gate. High-activity vehicle transfer observed under blackout conditions without flight plan clearances.",
+    notes: [
+      "Manifest registry bypassed at 23:38 UTC.",
+      "Ground vehicle tail matches charter registry in Case File 07-B.",
+      "Connection to Hangar 14 confirmed via transit logs.",
+    ],
+    image: photo3,
+    ratio: "4 / 3",
+    connectedPins: ["pin-hub"],
+    connectedThreads: [1],
+    connectedEvidenceIds: ["photo-cargo", "case-file", "photo-hangar"],
+  },
+  "photo-cargo": {
+    id: "photo-cargo",
+    title: "CHARTER CARGO FREIGHTER",
+    type: "photo",
+    classification: "CONFIDENTIAL // TAXIWAY CAPTURE",
+    timestamp: "02:15 HRS — APRON SECTOR 4",
+    description:
+      "Unmarked twin-turboprop cargo transport aircraft parked on remote stand with transponders off-line. Unscheduled refueling operation recorded.",
+    notes: [
+      "Registration numbers covered with temporary matte coating.",
+      "Flight path originating from northern grid coordinate corridor.",
+      "Payload transferred directly toward secure hangar perimeter.",
+    ],
+    image: photo2,
+    ratio: "4 / 3",
+    connectedPins: ["pin-hub"],
+    connectedThreads: [1, 2, 3, 4, 5],
+    connectedEvidenceIds: ["photo-terminal", "photo-airliner", "photo-hangar", "case-file"],
+  },
+  "photo-airliner": {
+    id: "photo-airliner",
+    title: "COMMERCIAL AIRLINER DUSK APPROACH",
+    type: "photo",
+    classification: "RESTRICTED // RADAR CORRIDOR",
+    timestamp: "18:50 HRS — RUNWAY 09L",
+    description:
+      "Commercial airliner on final approach at dusk along unauthorized vector. Secondary transponder frequency intercepted by task force receivers.",
+    notes: [
+      "Altitude divergence detected 14nm out.",
+      "Radio communication frequency coincides with coord beacon 76.5121° E.",
+      "Correlates with airfield satellite pass logs.",
+    ],
+    image: photo1,
+    ratio: "4 / 3",
+    connectedPins: ["pin-airliner"],
+    connectedThreads: [4, 6],
+    connectedEvidenceIds: ["photo-cargo", "photo-hangar", "coord-note"],
+  },
+  "photo-airfield": {
+    id: "photo-airfield",
+    title: "AUXILIARY AIRSTRIP RECONNAISSANCE",
+    type: "photo",
+    classification: "TOP SECRET // ORBITAL IMAGERY",
+    timestamp: "06:30 HRS — SATELLITE PASS",
+    description:
+      "High-resolution reconnaissance photograph of auxiliary dirt airstrip. Recent grading and tire tracks indicate heavy transport landings.",
+    notes: [
+      "Length: 1,400 meters, suitable for tactical transport.",
+      "Co-located within 4km of field coordinate waypoint 30.3466° N.",
+      "Logistics cache spotted beneath camouflage netting.",
+    ],
+    image: photo4,
+    ratio: "3 / 4",
+    connectedPins: ["pin-airfield"],
+    connectedThreads: [8, 9],
+    connectedEvidenceIds: ["coord-note", "photo-hangar", "case-file"],
+  },
+  "photo-hangar": {
+    id: "photo-hangar",
+    title: "HANGAR 14 NIGHT RECON",
+    type: "photo",
+    classification: "CLEARANCE RED // DIRECT EVIDENCE",
+    timestamp: "03:18 HRS — COMPOUND B",
+    description:
+      "Nighttime reconnaissance of maintenance hangar with reinforced security perimeter. High-voltage auxiliary generator operational during curfew.",
+    notes: [
+      "Suspected nerve center for cargo routing and decrypt operations.",
+      "Armed security detail rotating on 40-minute intervals.",
+      "All physical leads on the board converge to this sector.",
+    ],
+    image: photo3,
+    ratio: "3 / 5",
+    connectedPins: ["pin-hangar"],
+    connectedThreads: [5, 6, 7, 8, 10],
+    connectedEvidenceIds: ["photo-cargo", "photo-airliner", "photo-airfield", "case-file"],
+  },
+  "case-file": {
+    id: "case-file",
+    title: "CASE FILE 07-B — CARGO MANIFEST",
+    type: "document",
+    classification: "STATUS: OPEN // CLEARANCE: RED",
+    timestamp: "DEPT OF INTEL X — CASE LOG",
+    description:
+      "Confidential logistics dossier documenting contraband freight transits and encrypted waypoint schedules between regional airfields.",
+    notes: [
+      "Manifest items: Coded cryptographic modules and relay components.",
+      "Courier signatures cross-referenced with Patiala task force database.",
+      "Status remains open pending verification of submitted citizen leads.",
+    ],
+    image: paper,
+    connectedPins: ["pin-casefile"],
+    connectedThreads: [3, 7],
+    connectedEvidenceIds: ["photo-cargo", "photo-hangar", "main-doc"],
+  },
+  "coord-note": {
+    id: "coord-note",
+    title: "TACTICAL FIELD COORDINATE NOTE",
+    type: "document",
+    classification: "SECTOR GRID // WAYPOINT ALPHA",
+    timestamp: "GPS BEACON FIX",
+    description:
+      "Handwritten field coordinates: 30.3466° N, 76.5121° E located in the Patiala sector near Thapar Institute of Engineering.",
+    notes: [
+      "Exact rendezvous coordinates for task force contact.",
+      "Direct line of sight to regional approach corridor.",
+      "Physical drop point active between 20:00 and 04:00 HRS.",
+    ],
+    image: paper,
+    connectedPins: ["pin-airfield"],
+    connectedThreads: [9],
+    connectedEvidenceIds: ["photo-airfield", "main-doc"],
+  },
+  "contact-note": {
+    id: "contact-note",
+    title: "CALL FOR LEADS // TASK FORCE MEMO",
+    type: "document",
+    classification: "PUBLIC BULLETIN // INTEL X",
+    timestamp: "DIRECTIVE 01-A",
+    description:
+      "Official task force memo soliciting confidential whistleblower information, citizen surveillance captures, and anomalous flight sightings.",
+    notes: [
+      "Secure encrypted channel available via the right document dispatch box.",
+      "Whistleblowers granted automatic anonymity.",
+      "All transmissions routed through encrypted server relays.",
+    ],
+    image: paperNote,
+    connectedPins: ["pin-hub"],
+    connectedThreads: [0],
+    connectedEvidenceIds: ["photo-terminal", "main-doc"],
+  },
+  "map-evidence": {
+    id: "map-evidence",
+    title: "TACTICAL SECTOR MAP",
+    type: "map",
+    classification: "REGIONAL FLIGHT CORRIDOR",
+    timestamp: "TOPOGRAPHIC AIRWAYS MAP",
+    description:
+      "Weathered flight chart mapping low-altitude radar shadow corridors, non-towered landing zones, and coordinate drop zones across the sector.",
+    notes: [
+      "Vector routes highlight active courier corridors.",
+      "Red boundary markers denote restricted government airspace.",
+      "Correlates with intercepted airfield frequencies.",
+    ],
+    image: mapImg,
+    connectedPins: ["pin-hub", "pin-casefile"],
+    connectedThreads: [1, 2],
+    connectedEvidenceIds: ["photo-terminal", "photo-cargo", "coord-note"],
+  },
+  "main-doc": {
+    id: "main-doc",
+    title: "TASK FORCE DISPATCH & CONTACT DOSSIER",
+    type: "document",
+    classification: "SECURE INTAKE PORTAL",
+    timestamp: "ACTIVE STATION RELAY",
+    description:
+      "Secure submission terminal allowing undercover operatives and confidential informants to submit leads directly to Intel X investigators.",
+    notes: [
+      "PGP encrypted transmission channel.",
+      "Direct telephone & dispatch office in Patiala.",
+      "Leads logged with unique encrypted case reference codes.",
+    ],
+    image: paperDoc,
+    connectedPins: ["pin-hub"],
+    connectedThreads: [2],
+    connectedEvidenceIds: ["contact-note", "case-file", "coord-note"],
+  },
+};
+
+/* -------------------------------------------------------------------------- */
+/*                                THREAD CONFIG                               */
+/* -------------------------------------------------------------------------- */
+
+interface ThreadSegment {
+  d: string;
+  duration: number;
+  delay: number;
+  pulseDuration: number;
+  pulseDelay: number;
+  pins: [string, string];
+  evidenceIds: string[];
+}
+
+const THREAD_SEGMENTS: ThreadSegment[] = [
+  {
+    d: "M180 130 L330 185",
+    duration: 11.8,
+    delay: -2.4,
+    pulseDuration: 5.2,
+    pulseDelay: -1.1,
+    pins: ["pin-contact", "pin-hub"],
+    evidenceIds: ["contact-note", "photo-terminal"],
+  },
+  {
+    d: "M330 185 L430 120",
+    duration: 9.6,
+    delay: -6.1,
+    pulseDuration: 4.4,
+    pulseDelay: -3.2,
+    pins: ["pin-hub", "pin-terminal"],
+    evidenceIds: ["photo-terminal", "photo-cargo"],
+  },
+  {
+    d: "M330 185 L500 165",
+    duration: 13.5,
+    delay: -4.3,
+    pulseDuration: 6.0,
+    pulseDelay: -4.8,
+    pins: ["pin-hub", "pin-doc"],
+    evidenceIds: ["photo-cargo", "main-doc"],
+  },
+  {
+    d: "M330 185 L470 300",
+    duration: 11.0,
+    delay: -8.2,
+    pulseDuration: 4.9,
+    pulseDelay: -2.3,
+    pins: ["pin-hub", "pin-casefile"],
+    evidenceIds: ["photo-cargo", "case-file"],
+  },
+  {
+    d: "M330 185 L190 320",
+    duration: 14.2,
+    delay: -3.9,
+    pulseDuration: 6.5,
+    pulseDelay: -5.5,
+    pins: ["pin-hub", "pin-airliner"],
+    evidenceIds: ["photo-cargo", "photo-airliner"],
+  },
+  {
+    d: "M330 185 L385 330",
+    duration: 9.2,
+    delay: -0.8,
+    pulseDuration: 4.2,
+    pulseDelay: -0.4,
+    pins: ["pin-hub", "pin-hangar"],
+    evidenceIds: ["photo-cargo", "photo-hangar"],
+  },
+  {
+    d: "M385 330 L190 320",
+    duration: 15.0,
+    delay: -9.5,
+    pulseDuration: 6.8,
+    pulseDelay: -4.1,
+    pins: ["pin-hangar", "pin-airliner"],
+    evidenceIds: ["photo-hangar", "photo-airliner"],
+  },
+  {
+    d: "M385 330 L470 300",
+    duration: 10.4,
+    delay: -3.1,
+    pulseDuration: 4.7,
+    pulseDelay: -2.6,
+    pins: ["pin-hangar", "pin-casefile"],
+    evidenceIds: ["photo-hangar", "case-file"],
+  },
+  {
+    d: "M385 330 L255 430",
+    duration: 12.6,
+    delay: -5.7,
+    pulseDuration: 5.6,
+    pulseDelay: -4.5,
+    pins: ["pin-hangar", "pin-airfield"],
+    evidenceIds: ["photo-hangar", "photo-airfield"],
+  },
+  {
+    d: "M255 430 L135 470",
+    duration: 11.4,
+    delay: -2.8,
+    pulseDuration: 5.1,
+    pulseDelay: -1.5,
+    pins: ["pin-airfield", "pin-coord"],
+    evidenceIds: ["photo-airfield", "coord-note"],
+  },
+  {
+    d: "M385 330 L400 445",
+    duration: 9.8,
+    delay: -7.2,
+    pulseDuration: 4.5,
+    pulseDelay: -3.8,
+    pins: ["pin-hangar", "pin-hangar-bot"],
+    evidenceIds: ["photo-hangar"],
+  },
+];
+
+interface PinData {
+  id: string;
+  label: string;
+  className: string;
+  connectedThreads: number[];
+  connectedEvidenceIds: string[];
+}
+
+const PIN_DATA: PinData[] = [
+  {
+    id: "pin-hub",
+    label: "Nexus Node (Center)",
+    className: "left-[32.4%] top-[31.4%]",
+    connectedThreads: [0, 1, 2, 3, 4, 5],
+    connectedEvidenceIds: [
+      "contact-note",
+      "photo-terminal",
+      "photo-cargo",
+      "main-doc",
+      "case-file",
+      "photo-airliner",
+      "photo-hangar",
+    ],
+  },
+  {
+    id: "pin-airliner",
+    label: "Approach Corridor Pin",
+    className: "left-[18.4%] top-[56.4%]",
+    connectedThreads: [4, 6],
+    connectedEvidenceIds: ["photo-airliner", "photo-hangar", "photo-cargo"],
+  },
+  {
+    id: "pin-casefile",
+    label: "Manifest Clearance Pin",
+    className: "left-[46.4%] top-[52.6%]",
+    connectedThreads: [3, 7],
+    connectedEvidenceIds: ["case-file", "photo-hangar", "photo-cargo"],
+  },
+  {
+    id: "pin-airfield",
+    label: "Recon Sector Pin",
+    className: "left-[24.9%] top-[75.8%]",
+    connectedThreads: [8, 9],
+    connectedEvidenceIds: ["photo-airfield", "coord-note", "photo-hangar"],
+  },
+  {
+    id: "pin-hangar",
+    label: "Hangar Compound Pin",
+    className: "left-[38%] top-[57.9%]",
+    connectedThreads: [5, 6, 7, 8, 10],
+    connectedEvidenceIds: ["photo-hangar", "photo-cargo", "photo-airliner", "photo-airfield", "case-file"],
+  },
+];
+
+/* -------------------------------------------------------------------------- */
+/*                               PIN COMPONENT                                */
+/* -------------------------------------------------------------------------- */
+
+function Pin({
+  className = "",
+  isActive = false,
+  isHighlighted = false,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
+  label = "Evidence Pin",
+}: {
+  className?: string;
+  isActive?: boolean;
+  isHighlighted?: boolean;
+  onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  label?: string;
+}) {
   return (
-    <span className={`absolute z-30 h-4 w-4 ${className}`} aria-hidden="true">
-      <span className="block h-4 w-4 rounded-full bg-[oklch(0.45_0.19_27)] shadow-[inset_-1px_-2px_3px_rgba(0,0,0,0.55),inset_2px_2px_3px_rgba(255,255,255,0.35),0_4px_6px_rgba(0,0,0,0.7)]" />
-    </span>
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      aria-label={label}
+      aria-pressed={isActive}
+      className={`group absolute z-30 flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center cursor-pointer transition-transform duration-200 focus:outline-none focus-visible:scale-125 ${className}`}
+    >
+      <span
+        className={`block h-4 w-4 rounded-full transition-all duration-200 ${
+          isActive
+            ? "pin-active-ring scale-125 bg-[oklch(0.55_0.23_27)] shadow-[0_0_12px_rgba(255,40,40,0.8),inset_-1px_-2px_3px_rgba(0,0,0,0.6),inset_2px_2px_3px_rgba(255,255,255,0.6)]"
+            : isHighlighted
+              ? "scale-115 bg-[oklch(0.50_0.21_27)] shadow-[0_0_8px_rgba(220,30,30,0.6),inset_-1px_-2px_3px_rgba(0,0,0,0.55),inset_2px_2px_3px_rgba(255,255,255,0.45)]"
+              : "bg-[oklch(0.45_0.19_27)] shadow-[inset_-1px_-2px_3px_rgba(0,0,0,0.55),inset_2px_2px_3px_rgba(255,255,255,0.35),0_4px_6px_rgba(0,0,0,0.7)] group-hover:scale-115 group-hover:bg-[oklch(0.49_0.20_27)]"
+        }`}
+      />
+    </button>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/*                            PHOTO EVIDENCE ITEM                             */
+/* -------------------------------------------------------------------------- */
+
 function Photo({
-  src,
-  alt,
+  evidence,
   className,
   rotate,
   ratio = "4 / 3",
+  isDimmed = false,
+  isHighlighted = false,
+  isActive = false,
+  onClick,
+  onMouseEnter,
+  onMouseLeave,
 }: {
-  src: string;
-  alt: string;
+  evidence: EvidenceItem;
   className: string;
   rotate: string;
   ratio?: string;
+  isDimmed?: boolean;
+  isHighlighted?: boolean;
+  isActive?: boolean;
+  onClick: () => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }) {
   return (
     <figure
-      className={`absolute photo-shadow bg-[oklch(0.84_0.03_85)] p-[6px] pb-[18px] ${className}`}
-      style={{ transform: `rotate(${rotate})` }}
+      tabIndex={0}
+      role="button"
+      aria-label={`Inspect evidence: ${evidence.title}`}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      className={`evidence-interactive absolute cursor-pointer bg-[oklch(0.84_0.03_85)] p-[6px] pb-[18px] focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${className} ${
+        isDimmed ? "evidence-dimmed" : isHighlighted || isActive ? "evidence-highlighted" : "photo-shadow"
+      }`}
+      style={{
+        transform: isActive
+          ? `rotate(0deg) scale(1.06) translateY(-4px)`
+          : isHighlighted
+            ? `rotate(${parseFloat(rotate) * 0.4}deg) scale(1.04) translateY(-3px)`
+            : `rotate(${rotate})`,
+        zIndex: isActive ? 36 : isHighlighted ? 34 : 10,
+      }}
     >
-      <img
-        src={src}
-        alt={alt}
-        loading="lazy"
-        style={{ aspectRatio: ratio }}
-        className="w-full object-cover contrast-[0.95] saturate-[0.4] brightness-[0.75]"
-      />
-      <span className="pointer-events-none absolute inset-0 bg-[oklch(0.2_0.03_60)]/25 mix-blend-multiply" />
+      <div className="relative overflow-hidden">
+        <img
+          src={evidence.image}
+          alt={evidence.description}
+          loading="lazy"
+          style={{ aspectRatio: ratio }}
+          className="w-full object-cover contrast-[0.95] saturate-[0.4] brightness-[0.75] transition-all duration-300 group-hover:brightness-[0.88]"
+        />
+        <span className="pointer-events-none absolute inset-0 bg-[oklch(0.2_0.03_60)]/25 mix-blend-multiply" />
+        <div className="pointer-events-none absolute bottom-1 right-1 bg-black/75 px-1.5 py-0.5 font-typewriter text-[7px] tracking-wider text-parchment opacity-80">
+          [INSPECT]
+        </div>
+      </div>
+      <figcaption className="mt-1.5 flex items-center justify-between px-0.5 font-typewriter text-[8px] tracking-wider text-ink/75">
+        <span className="truncate">{evidence.title.split("—")[0].trim()}</span>
+        <span className="text-[7px] text-ink/50">EXP.</span>
+      </figcaption>
     </figure>
   );
 }
 
+/* -------------------------------------------------------------------------- */
+/*                          EVIDENCE DOSSIER MODAL                            */
+/* -------------------------------------------------------------------------- */
+
+function EvidenceModal({
+  evidence,
+  onClose,
+  onSelectEvidence,
+}: {
+  evidence: EvidenceItem;
+  onClose: () => void;
+  onSelectEvidence: (id: string) => void;
+}) {
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={evidence.title}
+      className="modal-backdrop-anim fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 md:p-8"
+      onClick={onClose}
+    >
+      <div
+        className="modal-content-anim relative max-h-[90vh] w-full max-w-3xl overflow-y-auto border border-[oklch(0.35_0.02_70)] bg-[oklch(0.12_0.01_60)] p-6 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.95)] md:p-8"
+        style={{
+          backgroundImage: `url(${board})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Top Paper Header Strip */}
+        <div className="relative mb-6 border-b border-[oklch(0.35_0.02_70)] pb-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <span className="inline-block bg-[oklch(0.35_0.15_27)] px-2 py-0.5 font-condensed text-[10px] tracking-[0.25em] text-white">
+                {evidence.classification}
+              </span>
+              <h2 className="mt-2 font-typewriter text-xl font-bold tracking-wide text-[oklch(0.92_0.02_85)] md:text-2xl">
+                {evidence.title}
+              </h2>
+              <p className="mt-1 font-typewriter text-xs text-[oklch(0.70_0.03_75)]">
+                LOG TIMESTAMP: {evidence.timestamp}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close dossier"
+              className="border border-[oklch(0.4_0.02_70)] bg-[oklch(0.2_0.01_60)] px-3 py-1.5 font-typewriter text-xs tracking-widest text-[oklch(0.85_0.02_85)] transition-colors hover:bg-[oklch(0.3_0.01_60)] hover:text-white"
+            >
+              [ESC / CLOSE]
+            </button>
+          </div>
+        </div>
+
+        {/* Content Grid */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {/* Visual Evidence Plate */}
+          <div className="relative border border-[oklch(0.4_0.02_70)]/60 bg-[oklch(0.84_0.03_85)] p-3 shadow-2xl">
+            <img
+              src={evidence.image}
+              alt={evidence.title}
+              className="w-full object-cover contrast-[0.98] saturate-[0.7] brightness-[0.9]"
+            />
+            <div className="mt-3 flex items-center justify-between border-t border-ink/20 pt-2 font-typewriter text-[10px] text-ink/80">
+              <span>INTEL-X EVIDENCE LOG #07</span>
+              <span>AUTHENTIC RECORD</span>
+            </div>
+          </div>
+
+          {/* Intelligence Briefing */}
+          <div className="space-y-4 font-typewriter text-ink">
+            <div
+              className="paper-aged p-4"
+              style={{
+                backgroundImage: `url(${paperDoc})`,
+                backgroundSize: "cover",
+              }}
+            >
+              <h3 className="border-b border-ink/30 pb-1 text-xs font-bold uppercase tracking-wider">
+                Intelligence Briefing
+              </h3>
+              <p className="mt-2 text-xs leading-relaxed text-ink/90">
+                {evidence.description}
+              </p>
+
+              <h4 className="mt-4 border-b border-ink/20 pb-1 text-[11px] font-bold uppercase tracking-wider">
+                Investigative Findings
+              </h4>
+              <ul className="mt-2 space-y-1.5 text-[11px] leading-snug text-ink/85">
+                {evidence.notes.map((note, idx) => (
+                  <li key={idx} className="flex items-start gap-1.5">
+                    <span className="text-[oklch(0.45_0.19_27)]">▶</span>
+                    <span>{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Connected Clues Navigator */}
+            {evidence.connectedEvidenceIds.length > 0 && (
+              <div className="border border-[oklch(0.35_0.02_70)]/70 bg-[oklch(0.14_0.01_60)] p-3 text-[oklch(0.85_0.02_85)]">
+                <div className="font-condensed text-[10px] tracking-[0.2em] text-gold">
+                  CONNECTED EVIDENCE IN NETWORK:
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {evidence.connectedEvidenceIds.map((connectedId) => {
+                    const item = EVIDENCE_DATA[connectedId];
+                    if (!item) return null;
+                    return (
+                      <button
+                        key={connectedId}
+                        type="button"
+                        onClick={() => onSelectEvidence(connectedId)}
+                        className="border border-[oklch(0.45_0.08_35)] bg-[oklch(0.22_0.02_50)] px-2.5 py-1 font-typewriter text-[10px] tracking-wide text-[oklch(0.90_0.02_85)] transition-colors hover:border-gold hover:bg-[oklch(0.30_0.05_40)]"
+                      >
+                        → {item.title.split("—")[0].trim()}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                MAIN PAGE                                   */
+/* -------------------------------------------------------------------------- */
 
 function ContactPage() {
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [activeEvidenceId, setActiveEvidenceId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [modalEvidence, setModalEvidence] = useState<EvidenceItem | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"board" | "clues">("board");
+  const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Keyboard escape handler for selection
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && activeEvidenceId && !modalEvidence) {
+        setActiveEvidenceId(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeEvidenceId, modalEvidence]);
+
+  const activeFocusId = activeEvidenceId || hoveredId;
+
+  // Helper to determine if an evidence item or pin is highlighted
+  const isItemHighlighted = useCallback(
+    (id: string) => {
+      if (!activeFocusId) return false;
+      if (activeFocusId === id) return true;
+
+      // If activeFocus is a pin
+      const pin = PIN_DATA.find((p) => p.id === activeFocusId);
+      if (pin && pin.connectedEvidenceIds.includes(id)) return true;
+
+      // If activeFocus is an evidence item
+      const ev = EVIDENCE_DATA[activeFocusId];
+      if (ev && (ev.connectedEvidenceIds.includes(id) || ev.connectedPins.includes(id))) return true;
+
+      return false;
+    },
+    [activeFocusId]
+  );
+
+  // Helper to determine if an item should be dimmed
+  const isItemDimmed = useCallback(
+    (id: string) => {
+      if (!activeFocusId) return false;
+      return !isItemHighlighted(id);
+    },
+    [activeFocusId, isItemHighlighted]
+  );
+
+  // Helper to determine if a thread is highlighted
+  const isThreadHighlighted = useCallback(
+    (idx: number) => {
+      if (!activeFocusId) return false;
+      const seg = THREAD_SEGMENTS[idx];
+      if (!seg) return false;
+
+      const pin = PIN_DATA.find((p) => p.id === activeFocusId);
+      if (pin && pin.connectedThreads.includes(idx)) return true;
+
+      const ev = EVIDENCE_DATA[activeFocusId];
+      if (ev && ev.connectedThreads.includes(idx)) return true;
+
+      return false;
+    },
+    [activeFocusId]
+  );
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setSent(true);
+    const errors: Record<string, string> = {};
+    if (!formData.name.trim()) errors.name = "Name or operative callsign required.";
+    if (!formData.email.trim() || !formData.email.includes("@"))
+      errors.email = "Valid secure email address required.";
+    if (!formData.message.trim()) errors.message = "Transmission message cannot be empty.";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    setFormErrors({});
+    setSubmitting(true);
+    setTimeout(() => {
+      setSubmitting(false);
+      setSent(true);
+    }, 1200);
+  };
+
+  const handleResetForm = () => {
+    setSent(false);
+    setFormData({ name: "", email: "", subject: "", message: "" });
   };
 
   return (
-    <main className="min-h-screen bg-[oklch(0.09_0.005_60)] p-3 md:p-6">
-      <div className="mx-auto max-w-[1500px] border border-[oklch(0.3_0.02_70)]/70 bg-board">
+    <main className="min-h-screen bg-[oklch(0.09_0.005_60)] p-2 sm:p-3 md:p-6 overflow-x-hidden">
+      <div className="mx-auto max-w-[1500px] border border-[oklch(0.3_0.02_70)]/70 bg-board shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
         {/* HEADER */}
-        <header className="relative z-40 flex items-center justify-between border-b border-[oklch(0.3_0.02_70)]/50 bg-[oklch(0.11_0.008_60)] px-6 py-3 md:px-10">
+        <header className="relative z-40 flex items-center justify-between border-b border-[oklch(0.3_0.02_70)]/50 bg-[oklch(0.11_0.008_60)] px-4 py-3 sm:px-6 md:px-10">
           <div>
-            <div className="font-condensed text-xl font-500 tracking-[0.18em] text-[oklch(0.93_0.01_80)] md:text-2xl">
+            <div className="font-condensed text-lg font-500 tracking-[0.18em] text-[oklch(0.93_0.01_80)] sm:text-xl md:text-2xl">
               INTEL X
             </div>
-            <div className="font-condensed text-[9px] tracking-[0.32em] text-[oklch(0.62_0.02_70)] md:text-[10px]">
+            <div className="font-condensed text-[8px] tracking-[0.32em] text-[oklch(0.62_0.02_70)] sm:text-[9px] md:text-[10px]">
               UNCOVER THE NETWORK
             </div>
           </div>
-          <nav className="flex items-center gap-5 font-condensed text-[11px] tracking-[0.16em] md:gap-9 md:text-xs">
+
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-5 font-condensed text-[11px] tracking-[0.16em] md:flex md:gap-9 md:text-xs">
             {NAV.map((item) => {
               const active = item === "CONTACT US";
               return (
@@ -114,11 +804,99 @@ function ContactPage() {
               );
             })}
           </nav>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
+            className="flex h-9 w-9 items-center justify-center border border-[oklch(0.35_0.02_70)] bg-[oklch(0.15_0.01_60)] text-[oklch(0.85_0.02_85)] md:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+          >
+            <span className="font-typewriter text-sm font-bold">
+              {mobileMenuOpen ? "✕" : "☰"}
+            </span>
+          </button>
         </header>
 
-        {/* BOARD */}
+        {/* Mobile Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="border-b border-[oklch(0.35_0.02_70)] bg-[oklch(0.12_0.01_60)] px-6 py-4 md:hidden">
+            <nav className="flex flex-col space-y-3 font-condensed text-xs tracking-[0.2em]">
+              {NAV.map((item) => {
+                const active = item === "CONTACT US";
+                return (
+                  <a
+                    key={item}
+                    href="#"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={
+                      active
+                        ? "border-l-2 border-gold pl-2 text-gold font-bold"
+                        : "pl-2 text-[oklch(0.80_0.01_80)] transition-colors hover:text-gold"
+                    }
+                  >
+                    {item}
+                  </a>
+                );
+              })}
+            </nav>
+          </div>
+        )}
+
+        {/* Active Investigation Status Bar (When an item is focused) */}
+        {activeEvidenceId && (
+          <div className="flex items-center justify-between border-b border-[oklch(0.35_0.02_70)] bg-[oklch(0.16_0.03_30)] px-4 py-1.5 text-xs text-[oklch(0.90_0.02_85)]">
+            <div className="flex items-center gap-2">
+              <span className="inline-block h-2 w-2 rounded-full bg-[oklch(0.55_0.22_27)] animate-ping" />
+              <span className="font-condensed tracking-wider text-gold">
+                INVESTIGATING RELATIONSHIPS:
+              </span>
+              <span className="font-typewriter text-[11px] text-[oklch(0.95_0.02_85)]">
+                {EVIDENCE_DATA[activeEvidenceId]?.title || PIN_DATA.find((p) => p.id === activeEvidenceId)?.label || activeEvidenceId}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActiveEvidenceId(null)}
+              className="border border-[oklch(0.4_0.02_70)] bg-[oklch(0.2_0.01_60)] px-2.5 py-0.5 font-typewriter text-[10px] tracking-wider text-[oklch(0.85_0.02_85)] hover:bg-[oklch(0.3_0.01_60)]"
+            >
+              ✕ RESET FILTER [ESC]
+            </button>
+          </div>
+        )}
+
+        {/* Mobile View Switcher Tabs (Only on small screens) */}
+        <div className="flex border-b border-[oklch(0.3_0.02_70)]/50 bg-[oklch(0.13_0.01_60)] md:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileTab("board")}
+            className={`flex-1 py-2 font-condensed text-xs tracking-wider transition-colors ${
+              mobileTab === "board"
+                ? "border-b-2 border-gold bg-[oklch(0.16_0.01_60)] text-gold font-bold"
+                : "text-[oklch(0.75_0.01_80)] hover:text-white"
+            }`}
+          >
+            📌 EVIDENCE BOARD VIEW
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("clues")}
+            className={`flex-1 py-2 font-condensed text-xs tracking-wider transition-colors ${
+              mobileTab === "clues"
+                ? "border-b-2 border-gold bg-[oklch(0.16_0.01_60)] text-gold font-bold"
+                : "text-[oklch(0.75_0.01_80)] hover:text-white"
+            }`}
+          >
+            📁 CLUES & DOSSIERS (7)
+          </button>
+        </div>
+
+        {/* CORKBOARD CONTAINER */}
         <div
-          className="board-vignette relative w-full overflow-hidden"
+          className={`board-vignette relative w-full overflow-hidden select-none ${
+            mobileTab === "clues" ? "hidden md:block" : "block"
+          }`}
           style={{
             backgroundImage: `url(${board})`,
             backgroundSize: "cover",
@@ -126,45 +904,191 @@ function ContactPage() {
             aspectRatio: "1500 / 830",
             minHeight: "560px",
           }}
+          onClick={() => {
+            if (activeEvidenceId) setActiveEvidenceId(null);
+          }}
         >
-          {/* red strings */}
+          {/* SVG RED STRINGS WITH REALISTIC VISCOUS BLOOD FLOW */}
           <svg
             className="pointer-events-none absolute inset-0 z-20 h-full w-full"
             viewBox="0 0 1000 560"
             preserveAspectRatio="none"
             aria-hidden="true"
           >
+            {/* 1. Base physical thread (matte crimson twine) */}
             <g
-              stroke="oklch(0.42 0.16 27)"
-              strokeWidth="1.3"
+              stroke="oklch(0.38 0.14 26)"
+              strokeWidth="1.2"
               fill="none"
-              opacity="0.85"
+              opacity="0.82"
               strokeLinecap="round"
             >
-              <path d="M180 130 L330 185" />
-              <path d="M330 185 L430 120" />
-              <path d="M330 185 L500 165" />
-              <path d="M330 185 L470 300" />
-              <path d="M330 185 L190 320" />
-              <path d="M330 185 L385 330" />
-              <path d="M385 330 L190 320" />
-              <path d="M385 330 L470 300" />
-              <path d="M385 330 L255 430" />
-              <path d="M255 430 L135 470" />
-              <path d="M385 330 L400 445" />
+              {THREAD_SEGMENTS.map((seg, i) => (
+                <path
+                  key={`base-${i}`}
+                  d={seg.d}
+                  className={
+                    isThreadHighlighted(i)
+                      ? "stroke-[oklch(0.48_0.18_27)] stroke-[1.7px]"
+                      : activeFocusId
+                        ? "thread-dimmed"
+                        : ""
+                  }
+                />
+              ))}
+            </g>
+
+            {/* 2. Capillary wall darkening & stain (Multiply blend for authentic soaking) */}
+            <g fill="none" style={{ mixBlendMode: "multiply" }}>
+              {THREAD_SEGMENTS.map((seg, i) => (
+                <path
+                  key={`stain-${i}`}
+                  d={seg.d}
+                  pathLength={300}
+                  stroke="oklch(0.16 0.08 24)"
+                  strokeWidth="1.7"
+                  strokeDasharray="65 35 45 155"
+                  className={`blood-flow-viscous ${
+                    isThreadHighlighted(i)
+                      ? "thread-highlighted"
+                      : activeFocusId
+                        ? "thread-dimmed"
+                        : ""
+                  }`}
+                  style={
+                    {
+                      opacity: isThreadHighlighted(i) ? 0.95 : 0.75,
+                      "--flow-duration": isThreadHighlighted(i)
+                        ? `${seg.duration * 0.75}s`
+                        : `${seg.duration}s`,
+                      "--flow-delay": `${seg.delay}s`,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+            </g>
+
+            {/* 3. Dense viscous crimson blood core with organic density variation */}
+            <g fill="none">
+              {THREAD_SEGMENTS.map((seg, i) => (
+                <path
+                  key={`core-${i}`}
+                  d={seg.d}
+                  pathLength={300}
+                  stroke="oklch(0.26 0.16 26)"
+                  strokeWidth={isThreadHighlighted(i) ? 1.8 : 1.35}
+                  strokeDasharray="50 50 30 170"
+                  className={`blood-flow-density ${
+                    isThreadHighlighted(i)
+                      ? "thread-highlighted"
+                      : activeFocusId
+                        ? "thread-dimmed"
+                        : ""
+                  }`}
+                  style={
+                    {
+                      "--flow-duration": isThreadHighlighted(i)
+                        ? `${seg.duration * 0.75}s`
+                        : `${seg.duration}s`,
+                      "--flow-delay": `${seg.delay - 0.25}s`,
+                      "--pulse-duration": `${seg.pulseDuration}s`,
+                      "--pulse-delay": `${seg.pulseDelay}s`,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
+            </g>
+
+            {/* 4. Subtle wet specular micro-highlight (crisp ambient reflection along the wet liquid) */}
+            <g fill="none">
+              {THREAD_SEGMENTS.map((seg, i) => (
+                <path
+                  key={`specular-${i}`}
+                  d={seg.d}
+                  pathLength={300}
+                  stroke="rgba(245, 200, 200, 0.45)"
+                  strokeWidth="0.65"
+                  strokeDasharray="22 78 12 188"
+                  className={`blood-flow-specular ${
+                    isThreadHighlighted(i)
+                      ? "thread-highlighted"
+                      : activeFocusId
+                        ? "thread-dimmed"
+                        : ""
+                  }`}
+                  style={
+                    {
+                      "--flow-duration": isThreadHighlighted(i)
+                        ? `${seg.duration * 0.75}s`
+                        : `${seg.duration}s`,
+                      "--flow-delay": `${seg.delay - 0.2}s`,
+                      "--pulse-duration": `${seg.pulseDuration}s`,
+                      "--pulse-delay": `${seg.pulseDelay}s`,
+                    } as React.CSSProperties
+                  }
+                />
+              ))}
             </g>
           </svg>
 
           {/* MAP */}
-          <img
-            src={mapImg}
-            alt="Weathered field map pinned to the board"
-            loading="lazy"
-            className="paper-shadow absolute right-[0.5%] top-[6%] z-0 h-[86%] w-[18%] object-cover rotate-[4deg] opacity-90 brightness-[0.68] sepia-[0.4]"
-          />
+          <div
+            tabIndex={0}
+            role="button"
+            aria-label="Inspect Tactical Sector Map"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalEvidence(EVIDENCE_DATA["map-evidence"]);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setModalEvidence(EVIDENCE_DATA["map-evidence"]);
+              }
+            }}
+            onMouseEnter={() => setHoveredId("map-evidence")}
+            onMouseLeave={() => setHoveredId(null)}
+            className={`evidence-interactive absolute right-[0.5%] top-[6%] z-0 h-[86%] w-[18%] cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+              isItemDimmed("map-evidence")
+                ? "evidence-dimmed"
+                : isItemHighlighted("map-evidence")
+                  ? "evidence-highlighted"
+                  : ""
+            }`}
+          >
+            <img
+              src={mapImg}
+              alt="Weathered field map pinned to the board"
+              loading="lazy"
+              className="paper-shadow h-full w-full object-cover rotate-[4deg] opacity-90 brightness-[0.68] sepia-[0.4] transition-all duration-300 hover:brightness-[0.82]"
+            />
+          </div>
 
           {/* CONTACT NOTE */}
-          <div className="absolute left-[5%] top-[5%] z-10 w-[21%] min-w-[210px] rotate-[-3deg] px-6 py-6">
+          <div
+            tabIndex={0}
+            role="button"
+            aria-label="Read Contact Memo Note"
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveEvidenceId(activeEvidenceId === "contact-note" ? null : "contact-note");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setActiveEvidenceId(activeEvidenceId === "contact-note" ? null : "contact-note");
+              }
+            }}
+            onMouseEnter={() => setHoveredId("contact-note")}
+            onMouseLeave={() => setHoveredId(null)}
+            className={`evidence-interactive absolute left-[5%] top-[5%] z-10 w-[21%] min-w-[210px] rotate-[-3deg] cursor-pointer px-6 py-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+              isItemDimmed("contact-note")
+                ? "evidence-dimmed"
+                : isItemHighlighted("contact-note") || activeEvidenceId === "contact-note"
+                  ? "evidence-highlighted"
+                  : ""
+            }`}
+          >
             <span
               className="paper-aged pointer-events-none absolute inset-0 -z-10"
               style={{
@@ -173,7 +1097,13 @@ function ContactPage() {
                 backgroundPosition: "center",
               }}
             />
-            <Pin className="left-1/2 top-[-8px] -translate-x-1/2" />
+            <Pin
+              className="left-1/2 top-[-8px]"
+              label="Contact Note Pin"
+              isHighlighted={isItemHighlighted("contact-note")}
+              isActive={activeEvidenceId === "contact-note"}
+              onClick={() => setActiveEvidenceId(activeEvidenceId === "contact-note" ? null : "contact-note")}
+            />
 
             <h1 className="font-typewriter text-2xl tracking-wide text-ink md:text-[1.9rem]">
               CONTACT US
@@ -189,41 +1119,91 @@ function ContactPage() {
 
           {/* PHOTOGRAPHS */}
           <Photo
-            src={photo3}
-            alt="Night surveillance of an airport cargo terminal"
-            className="left-[27%] top-[3%] z-10 w-[14%]"
+            evidence={EVIDENCE_DATA["photo-terminal"]}
+            className="left-[27%] top-[3%] w-[14%]"
             rotate="2deg"
-          />
-          <Photo
-            src={photo2}
-            alt="Cargo aircraft parked on the tarmac"
-            className="left-[29%] top-[38%] z-10 w-[13%]"
-            rotate="-3deg"
-          />
-          <Photo
-            src={photo1}
-            alt="Airliner on final approach at dusk"
-            className="left-[8%] top-[44%] z-10 w-[16%]"
-            rotate="-2deg"
-          />
-          <Photo
-            src={photo4}
-            alt="Aerial reconnaissance shot of an airfield"
-            className="left-[19%] top-[62%] z-10 w-[12%]"
-            rotate="4deg"
-            ratio="3 / 4"
-          />
-          <Photo
-            src={photo3}
-            alt="Evidence photograph of a hangar at night"
-            className="left-[36%] top-[63%] z-10 w-[7.5%]"
-            rotate="-5deg"
-            ratio="3 / 5"
+            isDimmed={isItemDimmed("photo-terminal")}
+            isHighlighted={isItemHighlighted("photo-terminal")}
+            isActive={activeEvidenceId === "photo-terminal"}
+            onClick={() => setModalEvidence(EVIDENCE_DATA["photo-terminal"])}
+            onMouseEnter={() => setHoveredId("photo-terminal")}
+            onMouseLeave={() => setHoveredId(null)}
           />
 
-          {/* SMALL FILED DOCUMENT */}
+          <Photo
+            evidence={EVIDENCE_DATA["photo-cargo"]}
+            className="left-[29%] top-[38%] w-[13%]"
+            rotate="-3deg"
+            isDimmed={isItemDimmed("photo-cargo")}
+            isHighlighted={isItemHighlighted("photo-cargo")}
+            isActive={activeEvidenceId === "photo-cargo"}
+            onClick={() => setModalEvidence(EVIDENCE_DATA["photo-cargo"])}
+            onMouseEnter={() => setHoveredId("photo-cargo")}
+            onMouseLeave={() => setHoveredId(null)}
+          />
+
+          <Photo
+            evidence={EVIDENCE_DATA["photo-airliner"]}
+            className="left-[8%] top-[44%] w-[16%]"
+            rotate="-2deg"
+            isDimmed={isItemDimmed("photo-airliner")}
+            isHighlighted={isItemHighlighted("photo-airliner")}
+            isActive={activeEvidenceId === "photo-airliner"}
+            onClick={() => setModalEvidence(EVIDENCE_DATA["photo-airliner"])}
+            onMouseEnter={() => setHoveredId("photo-airliner")}
+            onMouseLeave={() => setHoveredId(null)}
+          />
+
+          <Photo
+            evidence={EVIDENCE_DATA["photo-airfield"]}
+            className="left-[19%] top-[62%] w-[12%]"
+            rotate="4deg"
+            ratio="3 / 4"
+            isDimmed={isItemDimmed("photo-airfield")}
+            isHighlighted={isItemHighlighted("photo-airfield")}
+            isActive={activeEvidenceId === "photo-airfield"}
+            onClick={() => setModalEvidence(EVIDENCE_DATA["photo-airfield"])}
+            onMouseEnter={() => setHoveredId("photo-airfield")}
+            onMouseLeave={() => setHoveredId(null)}
+          />
+
+          <Photo
+            evidence={EVIDENCE_DATA["photo-hangar"]}
+            className="left-[36%] top-[63%] w-[7.5%]"
+            rotate="-5deg"
+            ratio="3 / 5"
+            isDimmed={isItemDimmed("photo-hangar")}
+            isHighlighted={isItemHighlighted("photo-hangar")}
+            isActive={activeEvidenceId === "photo-hangar"}
+            onClick={() => setModalEvidence(EVIDENCE_DATA["photo-hangar"])}
+            onMouseEnter={() => setHoveredId("photo-hangar")}
+            onMouseLeave={() => setHoveredId(null)}
+          />
+
+          {/* SMALL FILED DOCUMENT: CASE FILE 07-B */}
           <div
-            className="paper-shadow absolute left-[45%] top-[68%] z-10 w-[9%] min-w-[92px] rotate-[6deg] px-3 py-3"
+            tabIndex={0}
+            role="button"
+            aria-label="Inspect Case File 07-B Manifest Document"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalEvidence(EVIDENCE_DATA["case-file"]);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setModalEvidence(EVIDENCE_DATA["case-file"]);
+              }
+            }}
+            onMouseEnter={() => setHoveredId("case-file")}
+            onMouseLeave={() => setHoveredId(null)}
+            className={`evidence-interactive paper-shadow absolute left-[45%] top-[68%] z-10 w-[9%] min-w-[92px] rotate-[6deg] cursor-pointer px-3 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+              isItemDimmed("case-file")
+                ? "evidence-dimmed"
+                : isItemHighlighted("case-file") || activeEvidenceId === "case-file"
+                  ? "evidence-highlighted"
+                  : ""
+            }`}
             style={{ backgroundImage: `url(${paper})`, backgroundSize: "cover" }}
           >
             <span className="pointer-events-none absolute inset-0 bg-[oklch(0.5_0.06_70)]/25 mix-blend-multiply" />
@@ -238,18 +1218,46 @@ function ContactPage() {
             </p>
           </div>
 
-
-          {/* PINS on the string network */}
-          <Pin className="left-[32.4%] top-[31.4%]" />
-          <Pin className="left-[18.4%] top-[56.4%]" />
-          <Pin className="left-[46.4%] top-[52.6%]" />
-          <Pin className="left-[24.9%] top-[75.8%]" />
-          <Pin className="left-[38%] top-[57.9%]" />
-
+          {/* PINS ON THE STRING NETWORK */}
+          {PIN_DATA.map((pin) => (
+            <Pin
+              key={pin.id}
+              className={pin.className}
+              label={pin.label}
+              isActive={activeEvidenceId === pin.id}
+              isHighlighted={isItemHighlighted(pin.id)}
+              onClick={() => {
+                setActiveEvidenceId(activeEvidenceId === pin.id ? null : pin.id);
+              }}
+              onMouseEnter={() => setHoveredId(pin.id)}
+              onMouseLeave={() => setHoveredId(null)}
+            />
+          ))}
 
           {/* COORDINATE NOTE */}
           <div
-            className="paper-shadow absolute bottom-[8%] left-[4%] z-10 w-[11%] min-w-[110px] rotate-[-4deg] px-4 py-3"
+            tabIndex={0}
+            role="button"
+            aria-label="Inspect Coordinate Note"
+            onClick={(e) => {
+              e.stopPropagation();
+              setModalEvidence(EVIDENCE_DATA["coord-note"]);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setModalEvidence(EVIDENCE_DATA["coord-note"]);
+              }
+            }}
+            onMouseEnter={() => setHoveredId("coord-note")}
+            onMouseLeave={() => setHoveredId(null)}
+            className={`evidence-interactive paper-shadow absolute bottom-[8%] left-[4%] z-10 w-[11%] min-w-[110px] rotate-[-4deg] cursor-pointer px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+              isItemDimmed("coord-note")
+                ? "evidence-dimmed"
+                : isItemHighlighted("coord-note") || activeEvidenceId === "coord-note"
+                  ? "evidence-highlighted"
+                  : ""
+            }`}
             style={{
               backgroundImage: `url(${paper})`,
               backgroundSize: "cover",
@@ -263,8 +1271,13 @@ function ContactPage() {
             </p>
           </div>
 
-          {/* MAIN DOCUMENT */}
-          <section className="absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[330px] rotate-[-0.6deg] px-8 py-6">
+          {/* MAIN DOCUMENT: CONTACT FORM */}
+          <section
+            className={`evidence-interactive absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[330px] rotate-[-0.6deg] px-8 py-6 ${
+              isItemDimmed("main-doc") ? "evidence-dimmed" : "evidence-highlighted"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <span
               className="paper-aged pointer-events-none absolute inset-0 -z-10"
               style={{
@@ -273,42 +1286,108 @@ function ContactPage() {
                 backgroundPosition: "center",
               }}
             />
-            <Pin className="left-[6%] top-[-8px]" />
-            <Pin className="right-[6%] top-[-8px]" />
-
+            <Pin className="left-[6%] top-[-8px]" label="Top Left Document Pin" />
+            <Pin className="right-[6%] top-[-8px]" label="Top Right Document Pin" />
 
             <h2 className="font-typewriter text-lg tracking-wide text-ink">
               SEND US A MESSAGE
             </h2>
 
-            <form onSubmit={onSubmit} className="mt-4 space-y-3">
-              {(["NAME", "EMAIL", "SUBJECT"] as const).map((label) => (
-                <div key={label}>
-                  <input
-                    required
-                    type={label === "EMAIL" ? "email" : "text"}
-                    aria-label={label}
-                    placeholder={label}
-                    className="paper-field w-full px-3 py-2 font-typewriter text-[11px] tracking-wide"
-                  />
+            {sent ? (
+              <div className="mt-4 border border-ink/30 bg-ink/5 p-4 font-typewriter text-ink">
+                <div className="flex items-center gap-2 text-xs font-bold text-[oklch(0.42_0.16_27)]">
+                  <span>✔</span>
+                  <span>TRANSMISSION DISPATCHED</span>
                 </div>
-              ))}
-              <textarea
-                required
-                rows={4}
-                aria-label="MESSAGE"
-                placeholder="MESSAGE"
-                className="paper-field w-full resize-none px-3 py-2 font-typewriter text-[11px] tracking-wide"
-              />
-              <div className="flex justify-center pt-1">
-                <button
-                  type="submit"
-                  className="bg-[oklch(0.22_0.01_60)] px-10 py-2 font-typewriter text-[11px] tracking-[0.18em] text-[oklch(0.92_0.02_85)] shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-colors hover:bg-[oklch(0.28_0.01_60)]"
-                >
-                  {sent ? "SENT" : "SUBMIT"}
-                </button>
+                <p className="mt-2 text-[11px] leading-5 text-ink/85">
+                  Your lead has been encrypted and logged under reference <strong>#IX-8492</strong>.
+                  Our task force is cross-referencing your report.
+                </p>
+                <div className="mt-4 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleResetForm}
+                    className="border border-ink/40 bg-[oklch(0.22_0.01_60)] px-6 py-1.5 font-typewriter text-[10px] tracking-widest text-[oklch(0.92_0.02_85)] hover:bg-[oklch(0.28_0.01_60)]"
+                  >
+                    SEND ANOTHER REPORT
+                  </button>
+                </div>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={onSubmit} className="mt-4 space-y-3">
+                {(["name", "email", "subject"] as const).map((field) => {
+                  const label = field.toUpperCase();
+                  const err = formErrors[field];
+                  return (
+                    <div key={field}>
+                      <input
+                        type={field === "email" ? "email" : "text"}
+                        aria-label={label}
+                        placeholder={label}
+                        value={formData[field]}
+                        onChange={(e) => {
+                          setFormData({ ...formData, [field]: e.target.value });
+                          if (formErrors[field]) {
+                            const updated = { ...formErrors };
+                            delete updated[field];
+                            setFormErrors(updated);
+                          }
+                        }}
+                        className={`paper-field w-full px-3 py-2 font-typewriter text-[11px] tracking-wide transition-all ${
+                          err ? "border-red-600 bg-red-950/10" : ""
+                        }`}
+                      />
+                      {err && (
+                        <p className="mt-0.5 font-typewriter text-[9px] text-red-800">
+                          {err}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+                <div>
+                  <textarea
+                    rows={4}
+                    aria-label="MESSAGE"
+                    placeholder="MESSAGE"
+                    value={formData.message}
+                    onChange={(e) => {
+                      setFormData({ ...formData, message: e.target.value });
+                      if (formErrors.message) {
+                        const updated = { ...formErrors };
+                        delete updated.message;
+                        setFormErrors(updated);
+                      }
+                    }}
+                    className={`paper-field w-full resize-none px-3 py-2 font-typewriter text-[11px] tracking-wide transition-all ${
+                      formErrors.message ? "border-red-600 bg-red-950/10" : ""
+                    }`}
+                  />
+                  {formErrors.message && (
+                    <p className="mt-0.5 font-typewriter text-[9px] text-red-800">
+                      {formErrors.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex justify-center pt-1">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex items-center gap-2 bg-[oklch(0.22_0.01_60)] px-10 py-2 font-typewriter text-[11px] tracking-[0.18em] text-[oklch(0.92_0.02_85)] shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all hover:bg-[oklch(0.28_0.01_60)] active:scale-[0.98] disabled:opacity-60 cursor-pointer"
+                  >
+                    {submitting ? (
+                      <>
+                        <span className="inline-block h-2 w-2 rounded-full bg-gold animate-ping" />
+                        <span>ENCRYPTING...</span>
+                      </>
+                    ) : (
+                      "SUBMIT"
+                    )}
+                  </button>
+                </div>
+              </form>
+            )}
 
             <h3 className="mt-6 border-b border-ink/30 pb-1 font-typewriter text-base tracking-wide text-ink">
               REACH US AT
@@ -335,10 +1414,70 @@ function ContactPage() {
             </ul>
           </section>
         </div>
+
+        {/* MOBILE CLUES DRAWER VIEW (ACCESSIBLE CARDS LIST ON MOBILE) */}
+        {mobileTab === "clues" && (
+          <div className="space-y-4 bg-[oklch(0.12_0.01_60)] p-4 md:hidden">
+            <div className="border border-[oklch(0.35_0.02_70)] bg-[oklch(0.15_0.01_60)] p-3 text-[oklch(0.85_0.02_85)]">
+              <span className="font-condensed text-xs tracking-wider text-gold">
+                EVIDENCE INVENTORY:
+              </span>
+              <p className="mt-1 font-typewriter text-[10px] text-[oklch(0.70_0.02_75)]">
+                Tap any clue card to open its confidential investigative briefing dossier.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {Object.values(EVIDENCE_DATA).map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setModalEvidence(item)}
+                  className="flex cursor-pointer gap-3 border border-[oklch(0.35_0.02_70)] bg-[oklch(0.18_0.01_60)] p-3 shadow-md transition-colors hover:border-gold"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="h-20 w-20 shrink-0 object-cover contrast-[0.95]"
+                  />
+                  <div className="min-w-0 flex-1 font-typewriter">
+                    <span className="text-[8px] tracking-wider text-[oklch(0.55_0.15_27)] uppercase">
+                      {item.classification}
+                    </span>
+                    <h3 className="truncate text-xs font-bold text-[oklch(0.92_0.02_85)]">
+                      {item.title}
+                    </h3>
+                    <p className="mt-1 line-clamp-2 text-[10px] text-[oklch(0.75_0.02_75)]">
+                      {item.description}
+                    </p>
+                    <span className="mt-2 inline-block text-[9px] text-gold underline">
+                      Inspect Dossier →
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* EVIDENCE DETAIL MODAL */}
+      {modalEvidence && (
+        <EvidenceModal
+          evidence={modalEvidence}
+          onClose={() => setModalEvidence(null)}
+          onSelectEvidence={(id) => {
+            const ev = EVIDENCE_DATA[id];
+            if (ev) setModalEvidence(ev);
+          }}
+        />
+      )}
     </main>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                   ICONS                                    */
+/* -------------------------------------------------------------------------- */
 
 const iconClass = "mt-[2px] h-3.5 w-3.5 shrink-0 stroke-ink";
 
@@ -367,3 +1506,4 @@ function PinIcon() {
     </svg>
   );
 }
+
