@@ -56,7 +56,7 @@ function Photo({
 }) {
   return (
     <figure
-      className={`absolute photo-shadow bg-[oklch(0.84_0.03_85)] p-[3.5%] pb-[9%] ${className}`}
+      className={`absolute photo-shadow bg-[oklch(0.84_0.03_85)] p-[6px] pb-[18px] ${className}`}
       style={{ transform: `rotate(${rotate})` }}
     >
       <img
