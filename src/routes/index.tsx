@@ -161,16 +161,17 @@ function ContactPage() {
           />
 
           {/* CONTACT NOTE */}
-          <div
-            className="paper-shadow absolute left-[5%] top-[5%] z-10 w-[21%] min-w-[210px] rotate-[-3deg] px-6 py-6"
-            style={{
-              backgroundImage: `url(${paper})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
+          <div className="absolute left-[5%] top-[5%] z-10 w-[21%] min-w-[210px] rotate-[-3deg] px-6 py-6">
+            <span
+              className="paper-aged pointer-events-none absolute inset-0 -z-10"
+              style={{
+                backgroundImage: `url(${paperNote})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
             <Pin className="left-1/2 top-[-8px] -translate-x-1/2" />
-            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.55_0.06_70)]/22 mix-blend-multiply" />
+
             <h1 className="font-typewriter text-2xl tracking-wide text-ink md:text-[1.9rem]">
               CONTACT US
             </h1>
