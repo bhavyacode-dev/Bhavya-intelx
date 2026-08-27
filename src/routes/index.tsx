@@ -3,6 +3,9 @@ import { useState, type FormEvent } from "react";
 
 import board from "@/assets/board.jpg";
 import paper from "@/assets/paper.jpg";
+import paperNote from "@/assets/paper-note.jpg";
+import paperDoc from "@/assets/paper-doc.jpg";
+
 import mapImg from "@/assets/map.jpg";
 import photo1 from "@/assets/photo1.jpg";
 import photo2 from "@/assets/photo2.jpg";
