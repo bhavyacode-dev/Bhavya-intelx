@@ -3,6 +3,9 @@ import { useState, type FormEvent } from "react";
 
 import board from "@/assets/board.jpg";
 import paper from "@/assets/paper.jpg";
+import paperNote from "@/assets/paper-note.jpg";
+import paperDoc from "@/assets/paper-doc.jpg";
+
 import mapImg from "@/assets/map.jpg";
 import photo1 from "@/assets/photo1.jpg";
 import photo2 from "@/assets/photo2.jpg";
@@ -161,16 +164,17 @@ function ContactPage() {
           />
 
           {/* CONTACT NOTE */}
-          <div
-            className="paper-shadow absolute left-[5%] top-[5%] z-10 w-[21%] min-w-[210px] rotate-[-3deg] px-6 py-6"
-            style={{
-              backgroundImage: `url(${paper})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
+          <div className="absolute left-[5%] top-[5%] z-10 w-[21%] min-w-[210px] rotate-[-3deg] px-6 py-6">
+            <span
+              className="paper-aged pointer-events-none absolute inset-0 -z-10"
+              style={{
+                backgroundImage: `url(${paperNote})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
             <Pin className="left-1/2 top-[-8px] -translate-x-1/2" />
-            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.55_0.06_70)]/22 mix-blend-multiply" />
+
             <h1 className="font-typewriter text-2xl tracking-wide text-ink md:text-[1.9rem]">
               CONTACT US
             </h1>
@@ -260,17 +264,18 @@ function ContactPage() {
           </div>
 
           {/* MAIN DOCUMENT */}
-          <section
-            className="paper-shadow absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[330px] rotate-[-0.6deg] px-8 py-6"
-            style={{
-              backgroundImage: `url(${paper})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
+          <section className="absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[330px] rotate-[-0.6deg] px-8 py-6">
+            <span
+              className="paper-aged pointer-events-none absolute inset-0 -z-10"
+              style={{
+                backgroundImage: `url(${paperDoc})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
             <Pin className="left-[6%] top-[-8px]" />
             <Pin className="right-[6%] top-[-8px]" />
-            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.55_0.06_70)]/25 mix-blend-multiply" />
+
 
             <h2 className="font-typewriter text-lg tracking-wide text-ink">
               SEND US A MESSAGE
