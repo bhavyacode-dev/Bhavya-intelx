@@ -46,27 +46,31 @@ function Photo({
   alt,
   className,
   rotate,
+  ratio = "4 / 3",
 }: {
   src: string;
   alt: string;
   className: string;
   rotate: string;
+  ratio?: string;
 }) {
   return (
     <figure
-      className={`absolute photo-shadow bg-[oklch(0.86_0.03_85)] p-[3%] pb-[7%] ${className}`}
+      className={`absolute photo-shadow bg-[oklch(0.84_0.03_85)] p-[3.5%] pb-[9%] ${className}`}
       style={{ transform: `rotate(${rotate})` }}
     >
       <img
         src={src}
         alt={alt}
         loading="lazy"
-        className="h-full w-full object-cover contrast-[0.9] saturate-[0.45] brightness-[0.8]"
+        style={{ aspectRatio: ratio }}
+        className="w-full object-cover contrast-[0.95] saturate-[0.4] brightness-[0.75]"
       />
       <span className="pointer-events-none absolute inset-0 bg-[oklch(0.2_0.03_60)]/25 mix-blend-multiply" />
     </figure>
   );
 }
+
 
 function ContactPage() {
   const [sent, setSent] = useState(false);
