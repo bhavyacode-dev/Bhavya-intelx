@@ -166,13 +166,13 @@
 
 /* Aged physical paper: darkened worn edges, stains, creases, uneven edge line */
 @utility paper-aged {
-  background-color: oklch(0.83 0.05 82);
+  background-color: oklch(0.95 0.025 88);
   background-blend-mode: multiply;
   box-shadow:
     0 22px 40px -16px rgba(0, 0, 0, 0.9),
     0 2px 6px rgba(0, 0, 0, 0.55),
-    inset 0 0 46px rgba(78, 54, 26, 0.32),
-    inset 0 0 12px rgba(78, 54, 26, 0.28);
+    inset 0 0 46px rgba(78, 54, 26, 0.22),
+    inset 0 0 12px rgba(78, 54, 26, 0.2);
   clip-path: polygon(
     0.4% 1.2%,
     22% 0.2%,
@@ -197,12 +197,12 @@
     background:
       radial-gradient(
         ellipse at 12% 88%,
-        rgba(96, 62, 24, 0.3),
+        rgba(96, 62, 24, 0.18),
         transparent 42%
       ),
       radial-gradient(
         ellipse at 84% 16%,
-        rgba(104, 70, 30, 0.24),
+        rgba(104, 70, 30, 0.15),
         transparent 38%
       ),
       radial-gradient(
@@ -213,15 +213,15 @@
       linear-gradient(
         104deg,
         transparent 46.6%,
-        rgba(70, 46, 18, 0.14) 47.4%,
-        rgba(255, 244, 214, 0.16) 48.2%,
+        rgba(70, 46, 18, 0.07) 47.4%,
+        rgba(255, 244, 214, 0.08) 48.2%,
         transparent 49%
       ),
       linear-gradient(
         6deg,
         transparent 71.4%,
-        rgba(70, 46, 18, 0.12) 72.2%,
-        rgba(255, 244, 214, 0.14) 73%,
+        rgba(70, 46, 18, 0.06) 72.2%,
+        rgba(255, 244, 214, 0.07) 73%,
         transparent 73.8%
       );
     mix-blend-mode: multiply;
