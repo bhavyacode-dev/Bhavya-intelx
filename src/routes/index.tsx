@@ -217,6 +217,24 @@ function ContactPage() {
             ratio="3 / 5"
           />
 
+          {/* SMALL FILED DOCUMENT */}
+          <div
+            className="paper-shadow absolute left-[45%] top-[68%] z-10 w-[9%] min-w-[92px] rotate-[6deg] px-3 py-3"
+            style={{ backgroundImage: `url(${paper})`, backgroundSize: "cover" }}
+          >
+            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.5_0.06_70)]/25 mix-blend-multiply" />
+            <p className="font-typewriter text-[8px] leading-[1.7] tracking-wide text-ink/75">
+              CASE FILE 07-B
+              <br />
+              MANIFEST — CARGO
+              <br />
+              STATUS: OPEN
+              <br />
+              CLEARANCE: RED
+            </p>
+          </div>
+
+
           {/* PINS on the string network */}
           <Pin className="left-[32.4%] top-[31.4%]" />
           <Pin className="left-[18.4%] top-[56.4%]" />
