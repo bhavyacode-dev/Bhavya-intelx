@@ -157,7 +157,7 @@ function ContactPage() {
             src={mapImg}
             alt="Weathered field map pinned to the board"
             loading="lazy"
-            className="paper-shadow absolute right-[0.5%] top-[10%] z-0 w-[17%] rotate-[4deg] opacity-90 brightness-[0.7] sepia-[0.35]"
+            className="paper-shadow absolute right-[0.5%] top-[6%] z-0 h-[86%] w-[18%] object-cover rotate-[4deg] opacity-90 brightness-[0.68] sepia-[0.4]"
           />
 
           {/* CONTACT NOTE */}
@@ -170,7 +170,7 @@ function ContactPage() {
             }}
           >
             <Pin className="left-1/2 top-[-8px] -translate-x-1/2" />
-            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.35_0.05_60)]/12 mix-blend-multiply" />
+            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.55_0.06_70)]/22 mix-blend-multiply" />
             <h1 className="font-typewriter text-2xl tracking-wide text-ink md:text-[1.9rem]">
               CONTACT US
             </h1>
@@ -252,7 +252,7 @@ function ContactPage() {
           >
             <Pin className="left-[6%] top-[-8px]" />
             <Pin className="right-[6%] top-[-8px]" />
-            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.4_0.05_60)]/12 mix-blend-multiply" />
+            <span className="pointer-events-none absolute inset-0 bg-[oklch(0.55_0.06_70)]/25 mix-blend-multiply" />
 
             <h2 className="font-typewriter text-lg tracking-wide text-ink">
               SEND US A MESSAGE
