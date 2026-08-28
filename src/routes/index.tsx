@@ -359,76 +359,6 @@ const THREAD_SEGMENTS: ThreadSegment[] = [
   },
 ];
 
-/* -------------------------------------------------------------------------- */
-/*                           MOBILE THREAD SEGMENTS                           */
-/* -------------------------------------------------------------------------- */
-
-const MOBILE_THREAD_SEGMENTS: ThreadSegment[] = [
-  {
-    d: "M 25 15 Q 50 25, 75 15",
-    duration: 10.5,
-    delay: -2.1,
-    pulseDuration: 4.8,
-    pulseDelay: -1.0,
-    pins: ["pin-terminal", "pin-cargo"],
-    evidenceIds: ["photo-terminal", "photo-cargo"],
-  },
-  {
-    d: "M 75 15 Q 50 30, 25 40",
-    duration: 12.0,
-    delay: -4.5,
-    pulseDuration: 5.5,
-    pulseDelay: -2.2,
-    pins: ["pin-cargo", "pin-airliner"],
-    evidenceIds: ["photo-cargo", "photo-airliner"],
-  },
-  {
-    d: "M 25 40 Q 50 45, 75 40",
-    duration: 9.8,
-    delay: -6.0,
-    pulseDuration: 4.5,
-    pulseDelay: -3.0,
-    pins: ["pin-airliner", "pin-airfield"],
-    evidenceIds: ["photo-airliner", "photo-airfield"],
-  },
-  {
-    d: "M 75 40 Q 50 55, 25 65",
-    duration: 13.2,
-    delay: -3.2,
-    pulseDuration: 6.0,
-    pulseDelay: -1.8,
-    pins: ["pin-airfield", "pin-hangar"],
-    evidenceIds: ["photo-airfield", "photo-hangar"],
-  },
-  {
-    d: "M 25 65 Q 50 70, 75 65",
-    duration: 11.0,
-    delay: -1.5,
-    pulseDuration: 5.0,
-    pulseDelay: -0.5,
-    pins: ["pin-hangar", "pin-casefile"],
-    evidenceIds: ["photo-hangar", "case-file"],
-  },
-  {
-    d: "M 75 65 Q 50 80, 25 90",
-    duration: 12.5,
-    delay: -5.0,
-    pulseDuration: 5.6,
-    pulseDelay: -2.8,
-    pins: ["pin-casefile", "pin-coord"],
-    evidenceIds: ["case-file", "coord-note"],
-  },
-  {
-    d: "M 25 90 Q 50 95, 75 90",
-    duration: 10.0,
-    delay: -3.8,
-    pulseDuration: 4.6,
-    pulseDelay: -1.4,
-    pins: ["pin-coord", "pin-map"],
-    evidenceIds: ["coord-note", "map-evidence"],
-  },
-];
-
 interface PinData {
   id: string;
   label: string;
@@ -651,7 +581,6 @@ function EvidenceModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Paper Header Strip */}
         <div className="relative mb-4 sm:mb-6 border-b border-[oklch(0.35_0.02_70)] pb-3 sm:pb-4">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -676,9 +605,7 @@ function EvidenceModal({
           </div>
         </div>
 
-        {/* Content Grid */}
         <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
-          {/* Visual Evidence Plate */}
           <div className="relative border border-[oklch(0.4_0.02_70)]/60 bg-[oklch(0.84_0.03_85)] p-2.5 sm:p-3 shadow-2xl">
             <img
               src={evidence.image}
@@ -691,7 +618,6 @@ function EvidenceModal({
             </div>
           </div>
 
-          {/* Intelligence Briefing */}
           <div className="space-y-3 sm:space-y-4 font-typewriter text-ink">
             <div
               className="paper-aged p-3.5 sm:p-4"
@@ -720,7 +646,6 @@ function EvidenceModal({
               </ul>
             </div>
 
-            {/* Connected Clues Navigator */}
             {evidence.connectedEvidenceIds.length > 0 && (
               <div className="border border-[oklch(0.35_0.02_70)]/70 bg-[oklch(0.14_0.01_60)] p-3 text-[oklch(0.85_0.02_85)]">
                 <div className="font-condensed text-[9px] sm:text-[10px] tracking-[0.2em] text-gold">
@@ -765,7 +690,6 @@ function ContactPage() {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Keyboard escape handler for selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && activeEvidenceId && !modalEvidence) {
@@ -778,26 +702,19 @@ function ContactPage() {
 
   const activeFocusId = activeEvidenceId || hoveredId;
 
-  // Helper to determine if an evidence item or pin is highlighted
   const isItemHighlighted = useCallback(
     (id: string) => {
       if (!activeFocusId) return false;
       if (activeFocusId === id) return true;
-
-      // If activeFocus is a pin
       const pin = PIN_DATA.find((p) => p.id === activeFocusId);
       if (pin && pin.connectedEvidenceIds.includes(id)) return true;
-
-      // If activeFocus is an evidence item
       const ev = EVIDENCE_DATA[activeFocusId];
       if (ev && (ev.connectedEvidenceIds.includes(id) || ev.connectedPins.includes(id))) return true;
-
       return false;
     },
     [activeFocusId]
   );
 
-  // Helper to determine if an item should be dimmed
   const isItemDimmed = useCallback(
     (id: string) => {
       if (!activeFocusId) return false;
@@ -806,19 +723,15 @@ function ContactPage() {
     [activeFocusId, isItemHighlighted]
   );
 
-  // Helper to determine if a thread is highlighted
   const isThreadHighlighted = useCallback(
     (idx: number) => {
       if (!activeFocusId) return false;
       const seg = THREAD_SEGMENTS[idx];
       if (!seg) return false;
-
       const pin = PIN_DATA.find((p) => p.id === activeFocusId);
       if (pin && pin.connectedThreads.includes(idx)) return true;
-
       const ev = EVIDENCE_DATA[activeFocusId];
       if (ev && ev.connectedThreads.includes(idx)) return true;
-
       return false;
     },
     [activeFocusId]
@@ -853,9 +766,6 @@ function ContactPage() {
   return (
     <main className="min-h-screen bg-[oklch(0.09_0.005_60)] p-1.5 sm:p-3 md:p-6 overflow-x-hidden">
       <div className="mx-auto max-w-[1500px] border border-[oklch(0.3_0.02_70)]/70 bg-board shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
-        {/* ---------------------------------------------------------------- */}
-        {/* HEADER                                                           */}
-        {/* ---------------------------------------------------------------- */}
         <header className="relative z-40 flex items-center justify-between border-b border-[oklch(0.3_0.02_70)]/50 bg-[oklch(0.11_0.008_60)] px-3 py-2.5 sm:px-6 md:px-10">
           <div>
             <div className="font-condensed text-lg font-500 tracking-[0.18em] text-[oklch(0.93_0.01_80)] sm:text-xl md:text-2xl">
@@ -865,8 +775,6 @@ function ContactPage() {
               UNCOVER THE NETWORK
             </div>
           </div>
-
-          {/* Desktop Navigation */}
           <nav className="hidden items-center gap-5 font-condensed text-[11px] tracking-[0.16em] md:flex md:gap-9 md:text-xs">
             {NAV.map((item) => {
               const active = item === "CONTACT US";
@@ -885,8 +793,6 @@ function ContactPage() {
               );
             })}
           </nav>
-
-          {/* Mobile Hamburger Button */}
           <button
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -900,7 +806,6 @@ function ContactPage() {
           </button>
         </header>
 
-        {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="border-b border-[oklch(0.35_0.02_70)] bg-[oklch(0.12_0.01_60)] px-4 py-3 md:hidden">
             <nav className="flex flex-col space-y-2.5 font-condensed text-xs tracking-[0.2em]">
@@ -925,7 +830,6 @@ function ContactPage() {
           </div>
         )}
 
-        {/* Active Investigation Status Bar */}
         {activeEvidenceId && (
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[oklch(0.35_0.02_70)] bg-[oklch(0.16_0.03_30)] px-3 py-1.5 text-xs text-[oklch(0.90_0.02_85)]">
             <div className="flex items-center gap-1.5 min-w-0">
@@ -949,9 +853,6 @@ function ContactPage() {
           </div>
         )}
 
-        {/* ================================================================ */}
-        {/* DESKTOP & TABLET EVIDENCE BOARD (>= 768px)                       */}
-        {/* ================================================================ */}
         <div
           className="board-vignette relative hidden w-full overflow-hidden select-none md:block"
           style={{
@@ -965,14 +866,12 @@ function ContactPage() {
             if (activeEvidenceId) setActiveEvidenceId(null);
           }}
         >
-          {/* SVG RED STRINGS WITH REALISTIC VISCOUS BLOOD FLOW */}
           <svg
             className="pointer-events-none absolute inset-0 z-20 h-full w-full"
             viewBox="0 0 1000 560"
             preserveAspectRatio="none"
             aria-hidden="true"
           >
-            {/* 1. Base physical thread */}
             <g
               stroke="oklch(0.38 0.14 26)"
               strokeWidth="1.2"
@@ -994,8 +893,6 @@ function ContactPage() {
                 />
               ))}
             </g>
-
-            {/* 2. Capillary wall darkening & stain */}
             <g fill="none" style={{ mixBlendMode: "multiply" }}>
               {THREAD_SEGMENTS.map((seg, i) => (
                 <path
@@ -1024,8 +921,6 @@ function ContactPage() {
                 />
               ))}
             </g>
-
-            {/* 3. Dense viscous crimson blood core */}
             <g fill="none">
               {THREAD_SEGMENTS.map((seg, i) => (
                 <path
@@ -1055,8 +950,6 @@ function ContactPage() {
                 />
               ))}
             </g>
-
-            {/* 4. Subtle wet specular micro-highlight */}
             <g fill="none">
               {THREAD_SEGMENTS.map((seg, i) => (
                 <path
@@ -1088,7 +981,6 @@ function ContactPage() {
             </g>
           </svg>
 
-          {/* MAP */}
           <div
             tabIndex={0}
             role="button"
@@ -1121,7 +1013,6 @@ function ContactPage() {
             />
           </div>
 
-          {/* CONTACT NOTE */}
           <div
             tabIndex={0}
             role="button"
@@ -1163,7 +1054,6 @@ function ContactPage() {
                 setActiveEvidenceId(activeEvidenceId === "contact-note" ? null : "contact-note")
               }
             />
-
             <h1 className="font-typewriter text-xl lg:text-2xl tracking-wide text-ink md:text-[1.7rem] lg:text-[1.9rem]">
               CONTACT US
             </h1>
@@ -1176,7 +1066,6 @@ function ContactPage() {
             </p>
           </div>
 
-          {/* PHOTOGRAPHS */}
           <Photo
             evidence={EVIDENCE_DATA["photo-terminal"]}
             className="left-[27%] top-[3%] w-[14%]"
@@ -1188,7 +1077,6 @@ function ContactPage() {
             onMouseEnter={() => setHoveredId("photo-terminal")}
             onMouseLeave={() => setHoveredId(null)}
           />
-
           <Photo
             evidence={EVIDENCE_DATA["photo-cargo"]}
             className="left-[29%] top-[38%] w-[13%]"
@@ -1200,7 +1088,6 @@ function ContactPage() {
             onMouseEnter={() => setHoveredId("photo-cargo")}
             onMouseLeave={() => setHoveredId(null)}
           />
-
           <Photo
             evidence={EVIDENCE_DATA["photo-airliner"]}
             className="left-[8%] top-[44%] w-[16%]"
@@ -1212,7 +1099,6 @@ function ContactPage() {
             onMouseEnter={() => setHoveredId("photo-airliner")}
             onMouseLeave={() => setHoveredId(null)}
           />
-
           <Photo
             evidence={EVIDENCE_DATA["photo-airfield"]}
             className="left-[19%] top-[62%] w-[12%]"
@@ -1225,7 +1111,6 @@ function ContactPage() {
             onMouseEnter={() => setHoveredId("photo-airfield")}
             onMouseLeave={() => setHoveredId(null)}
           />
-
           <Photo
             evidence={EVIDENCE_DATA["photo-hangar"]}
             className="left-[36%] top-[63%] w-[7.5%]"
@@ -1238,8 +1123,6 @@ function ContactPage() {
             onMouseEnter={() => setHoveredId("photo-hangar")}
             onMouseLeave={() => setHoveredId(null)}
           />
-
-          {/* SMALL FILED DOCUMENT: CASE FILE 07-B */}
           <div
             tabIndex={0}
             role="button"
@@ -1276,8 +1159,6 @@ function ContactPage() {
               CLEARANCE: RED
             </p>
           </div>
-
-          {/* PINS ON THE STRING NETWORK */}
           {PIN_DATA.map((pin) => (
             <Pin
               key={pin.id}
@@ -1292,8 +1173,6 @@ function ContactPage() {
               onMouseLeave={() => setHoveredId(null)}
             />
           ))}
-
-          {/* COORDINATE NOTE */}
           <div
             tabIndex={0}
             role="button"
@@ -1329,8 +1208,6 @@ function ContactPage() {
               76.5121° E
             </p>
           </div>
-
-          {/* MAIN DOCUMENT: CONTACT FORM */}
           <section
             className={`evidence-interactive absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[260px] lg:min-w-[330px] rotate-[-0.6deg] p-5 lg:px-8 lg:py-6 ${
               isItemDimmed("main-doc") ? "evidence-dimmed" : "evidence-highlighted"
@@ -1347,11 +1224,9 @@ function ContactPage() {
             />
             <Pin className="left-[6%] top-[-8px]" label="Top Left Document Pin" />
             <Pin className="right-[6%] top-[-8px]" label="Top Right Document Pin" />
-
             <h2 className="font-typewriter text-base lg:text-lg tracking-wide text-ink">
               SEND US A MESSAGE
             </h2>
-
             {sent ? (
               <div className="mt-3 lg:mt-4 border border-ink/30 bg-ink/5 p-3 lg:p-4 font-typewriter text-ink">
                 <div className="flex items-center gap-2 text-xs font-bold text-[oklch(0.42_0.16_27)]">
@@ -1428,7 +1303,6 @@ function ContactPage() {
                     </p>
                   )}
                 </div>
-
                 <div className="flex justify-center pt-1">
                   <button
                     type="submit"
@@ -1447,7 +1321,6 @@ function ContactPage() {
                 </div>
               </form>
             )}
-
             <h3 className="mt-4 lg:mt-6 border-b border-ink/30 pb-1 font-typewriter text-sm lg:text-base tracking-wide text-ink">
               REACH US AT
             </h3>
@@ -1474,29 +1347,29 @@ function ContactPage() {
           </section>
         </div>
 
-        {/* ================================================================ */}
-        {/* MOBILE DEDICATED EVIDENCE BOARD (< 768px)                        */}
-        {/* ================================================================ */}
         <div
-          className="board-vignette relative block w-full select-none p-3 sm:p-4 md:hidden"
+          className="board-vignette relative block w-full select-none p-3 sm:p-5 md:hidden"
           style={{
             backgroundImage: `url(${board})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
+          onClick={() => {
+            if (activeEvidenceId) setActiveEvidenceId(null);
+          }}
         >
-          {/* Top Memo Note */}
           <div
             tabIndex={0}
             role="button"
             aria-label="Read Contact Memo Note"
-            onClick={() =>
-              setActiveEvidenceId(activeEvidenceId === "contact-note" ? null : "contact-note")
-            }
-            className={`evidence-interactive relative mx-auto mb-4 w-full max-w-sm rotate-[-1.5deg] cursor-pointer p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
+            onClick={(e) => {
+              e.stopPropagation();
+              setActiveEvidenceId(activeEvidenceId === "contact-note" ? null : "contact-note");
+            }}
+            className={`evidence-interactive paper-shadow relative mx-auto mb-5 w-full max-w-sm rotate-[-1deg] cursor-pointer p-4 sm:p-5 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
               isItemDimmed("contact-note")
                 ? "evidence-dimmed"
-                : isItemHighlighted("contact-note")
+                : isItemHighlighted("contact-note") || activeEvidenceId === "contact-note"
                   ? "evidence-highlighted"
                   : ""
             }`}
@@ -1515,89 +1388,74 @@ function ContactPage() {
               isHighlighted={isItemHighlighted("contact-note")}
               isActive={activeEvidenceId === "contact-note"}
             />
-
             <h1 className="font-typewriter text-xl font-bold tracking-wide text-ink">
               CONTACT US
             </h1>
-            <p className="mt-2 font-typewriter text-xs leading-5 text-ink/85">
+            <p className="mt-2 font-typewriter text-[11px] sm:text-xs leading-5 text-ink/85">
               Have a lead? Want to collaborate?
               <br />
               We&apos;re listening.
             </p>
           </div>
 
-          {/* Section Divider & Thread Overlay Container */}
           <div className="relative mb-5">
-            {/* SVG Connecting Flow Lines Across Mobile Grid */}
             <svg
-              className="pointer-events-none absolute inset-0 z-20 h-full w-full opacity-70"
-              viewBox="0 0 100 100"
+              className="pointer-events-none absolute inset-x-0 -top-2 z-20 h-10 w-full"
+              viewBox="0 0 100 40"
               preserveAspectRatio="none"
               aria-hidden="true"
             >
-              {MOBILE_THREAD_SEGMENTS.map((seg, i) => (
-                <g key={`mob-seg-${i}`}>
-                  <path
-                    d={seg.d}
-                    stroke="oklch(0.38 0.14 26)"
-                    strokeWidth="1.2"
-                    fill="none"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d={seg.d}
-                    pathLength={300}
-                    stroke="oklch(0.16 0.08 24)"
-                    strokeWidth="1.7"
-                    strokeDasharray="65 35 45 155"
-                    className="blood-flow-viscous"
-                    fill="none"
-                    style={
-                      {
-                        opacity: 0.75,
-                        "--flow-duration": `${seg.duration}s`,
-                        "--flow-delay": `${seg.delay}s`,
-                      } as React.CSSProperties
-                    }
-                  />
-                  <path
-                    d={seg.d}
-                    pathLength={300}
-                    stroke="oklch(0.26 0.16 26)"
-                    strokeWidth="1.35"
-                    strokeDasharray="50 50 30 170"
-                    className="blood-flow-density"
-                    fill="none"
-                    style={
-                      {
-                        "--flow-duration": `${seg.duration}s`,
-                        "--flow-delay": `${seg.delay - 0.25}s`,
-                        "--pulse-duration": `${seg.pulseDuration}s`,
-                        "--pulse-delay": `${seg.pulseDelay}s`,
-                      } as React.CSSProperties
-                    }
-                  />
-                </g>
-              ))}
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                stroke="oklch(0.38 0.14 26)"
+                strokeWidth="1.3"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                pathLength={300}
+                stroke="oklch(0.16 0.08 24)"
+                strokeWidth="1.8"
+                strokeDasharray="65 35 45 155"
+                className="blood-flow-viscous"
+                fill="none"
+                style={{ opacity: 0.8, "--flow-duration": "10s", "--flow-delay": "-2s" } as React.CSSProperties}
+              />
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                pathLength={300}
+                stroke="oklch(0.26 0.16 26)"
+                strokeWidth="1.4"
+                strokeDasharray="50 50 30 170"
+                className="blood-flow-density"
+                fill="none"
+                style={{ "--flow-duration": "10s", "--flow-delay": "-2.25s", "--pulse-duration": "4.5s", "--pulse-delay": "-1s" } as React.CSSProperties}
+              />
             </svg>
-
-            {/* Mobile Evidence Collage Grid (2 Columns, organic rotation, full touchability) */}
-            <div className="relative z-10 grid grid-cols-2 gap-3.5 sm:gap-4">
-              {/* Evidence 1: Terminal */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div
                 tabIndex={0}
                 role="button"
                 aria-label="Inspect Cargo Terminal Perimeter"
-                onClick={() => setModalEvidence(EVIDENCE_DATA["photo-terminal"])}
-                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3.5 rotate-[-2deg] transition-all ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalEvidence(EVIDENCE_DATA["photo-terminal"]);
+                }}
+                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3 rotate-[-1deg] transition-all ${
                   isItemDimmed("photo-terminal")
                     ? "evidence-dimmed"
-                    : isItemHighlighted("photo-terminal")
-                      ? "evidence-highlighted scale-105"
+                    : isItemHighlighted("photo-terminal") || activeEvidenceId === "photo-terminal"
+                      ? "evidence-highlighted scale-[1.02]"
                       : ""
                 }`}
               >
-                <Pin className="left-1/2 top-[-6px]" label="Terminal Photo Pin" />
+                <Pin
+                  className="left-1/2 top-[-6px]"
+                  label="Terminal Photo Pin"
+                  isActive={activeEvidenceId === "photo-terminal"}
+                  isHighlighted={isItemHighlighted("photo-terminal")}
+                />
                 <img
                   src={photo3}
                   alt="Night surveillance of cargo terminal"
@@ -1608,48 +1466,98 @@ function ContactPage() {
                   <span>[INSPECT]</span>
                 </div>
               </div>
-
-              {/* Evidence 2: Cargo Aircraft */}
               <div
                 tabIndex={0}
                 role="button"
                 aria-label="Inspect Charter Cargo Freighter"
-                onClick={() => setModalEvidence(EVIDENCE_DATA["photo-cargo"])}
-                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3.5 rotate-[2.5deg] transition-all ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalEvidence(EVIDENCE_DATA["photo-cargo"]);
+                }}
+                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3 rotate-[1deg] transition-all ${
                   isItemDimmed("photo-cargo")
                     ? "evidence-dimmed"
-                    : isItemHighlighted("photo-cargo")
-                      ? "evidence-highlighted scale-105"
+                    : isItemHighlighted("photo-cargo") || activeEvidenceId === "photo-cargo"
+                      ? "evidence-highlighted scale-[1.02]"
                       : ""
                 }`}
               >
-                <Pin className="left-1/2 top-[-6px]" label="Cargo Aircraft Pin" />
+                <Pin
+                  className="left-1/2 top-[-6px]"
+                  label="Cargo Freighter Pin"
+                  isActive={activeEvidenceId === "photo-cargo"}
+                  isHighlighted={isItemHighlighted("photo-cargo")}
+                />
                 <img
                   src={photo2}
                   alt="Cargo aircraft on tarmac"
                   className="aspect-[4/3] w-full object-cover contrast-[0.95] saturate-[0.4] brightness-[0.75]"
                 />
                 <div className="mt-1 flex items-center justify-between px-0.5 font-typewriter text-[7px] text-ink/80">
-                  <span className="truncate">CARGO AIRCRAFT</span>
+                  <span className="truncate">CARGO FREIGHTER</span>
                   <span>[INSPECT]</span>
                 </div>
               </div>
-
-              {/* Evidence 3: Airliner */}
+            </div>
+          </div>
+          <div className="relative mb-5">
+            <svg
+              className="pointer-events-none absolute inset-x-0 -top-2 z-20 h-10 w-full"
+              viewBox="0 0 100 40"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                stroke="oklch(0.38 0.14 26)"
+                strokeWidth="1.3"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                pathLength={300}
+                stroke="oklch(0.16 0.08 24)"
+                strokeWidth="1.8"
+                strokeDasharray="65 35 45 155"
+                className="blood-flow-viscous"
+                fill="none"
+                style={{ opacity: 0.8, "--flow-duration": "11.5s", "--flow-delay": "-4s" } as React.CSSProperties}
+              />
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                pathLength={300}
+                stroke="oklch(0.26 0.16 26)"
+                strokeWidth="1.4"
+                strokeDasharray="50 50 30 170"
+                className="blood-flow-density"
+                fill="none"
+                style={{ "--flow-duration": "11.5s", "--flow-delay": "-4.25s", "--pulse-duration": "5s", "--pulse-delay": "-2s" } as React.CSSProperties}
+              />
+            </svg>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div
                 tabIndex={0}
                 role="button"
-                aria-label="Inspect Commercial Airliner Approach"
-                onClick={() => setModalEvidence(EVIDENCE_DATA["photo-airliner"])}
-                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3.5 rotate-[-1.5deg] transition-all ${
+                aria-label="Inspect Commercial Airliner Dusk Approach"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalEvidence(EVIDENCE_DATA["photo-airliner"]);
+                }}
+                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3 rotate-[-1deg] transition-all ${
                   isItemDimmed("photo-airliner")
                     ? "evidence-dimmed"
-                    : isItemHighlighted("photo-airliner")
-                      ? "evidence-highlighted scale-105"
+                    : isItemHighlighted("photo-airliner") || activeEvidenceId === "photo-airliner"
+                      ? "evidence-highlighted scale-[1.02]"
                       : ""
                 }`}
               >
-                <Pin className="left-1/2 top-[-6px]" label="Airliner Approach Pin" />
+                <Pin
+                  className="left-1/2 top-[-6px]"
+                  label="Airliner Pin"
+                  isActive={activeEvidenceId === "photo-airliner"}
+                  isHighlighted={isItemHighlighted("photo-airliner")}
+                />
                 <img
                   src={photo1}
                   alt="Airliner on final approach"
@@ -1660,77 +1568,133 @@ function ContactPage() {
                   <span>[INSPECT]</span>
                 </div>
               </div>
-
-              {/* Evidence 4: Airfield */}
               <div
                 tabIndex={0}
                 role="button"
                 aria-label="Inspect Auxiliary Airstrip Recon"
-                onClick={() => setModalEvidence(EVIDENCE_DATA["photo-airfield"])}
-                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3.5 rotate-[3deg] transition-all ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalEvidence(EVIDENCE_DATA["photo-airfield"]);
+                }}
+                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3 rotate-[1deg] transition-all ${
                   isItemDimmed("photo-airfield")
                     ? "evidence-dimmed"
-                    : isItemHighlighted("photo-airfield")
-                      ? "evidence-highlighted scale-105"
+                    : isItemHighlighted("photo-airfield") || activeEvidenceId === "photo-airfield"
+                      ? "evidence-highlighted scale-[1.02]"
                       : ""
                 }`}
               >
-                <Pin className="left-1/2 top-[-6px]" label="Auxiliary Airfield Pin" />
+                <Pin
+                  className="left-1/2 top-[-6px]"
+                  label="Airfield Recon Pin"
+                  isActive={activeEvidenceId === "photo-airfield"}
+                  isHighlighted={isItemHighlighted("photo-airfield")}
+                />
                 <img
                   src={photo4}
                   alt="Aerial reconnaissance shot of airfield"
-                  className="aspect-[3/4] w-full object-cover contrast-[0.95] saturate-[0.4] brightness-[0.75]"
+                  className="aspect-[4/3] w-full object-cover contrast-[0.95] saturate-[0.4] brightness-[0.75]"
                 />
                 <div className="mt-1 flex items-center justify-between px-0.5 font-typewriter text-[7px] text-ink/80">
                   <span className="truncate">AIRFIELD RECON</span>
                   <span>[INSPECT]</span>
                 </div>
               </div>
-
-              {/* Evidence 5: Hangar */}
+            </div>
+          </div>
+          <div className="relative mb-5">
+            <svg
+              className="pointer-events-none absolute inset-x-0 -top-2 z-20 h-10 w-full"
+              viewBox="0 0 100 40"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                stroke="oklch(0.38 0.14 26)"
+                strokeWidth="1.3"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                pathLength={300}
+                stroke="oklch(0.16 0.08 24)"
+                strokeWidth="1.8"
+                strokeDasharray="65 35 45 155"
+                className="blood-flow-viscous"
+                fill="none"
+                style={{ opacity: 0.8, "--flow-duration": "12.8s", "--flow-delay": "-1.5s" } as React.CSSProperties}
+              />
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                pathLength={300}
+                stroke="oklch(0.26 0.16 26)"
+                strokeWidth="1.4"
+                strokeDasharray="50 50 30 170"
+                className="blood-flow-density"
+                fill="none"
+                style={{ "--flow-duration": "12.8s", "--flow-delay": "-1.75s", "--pulse-duration": "5.2s", "--pulse-delay": "-0.8s" } as React.CSSProperties}
+              />
+            </svg>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div
                 tabIndex={0}
                 role="button"
                 aria-label="Inspect Hangar 14 Night Recon"
-                onClick={() => setModalEvidence(EVIDENCE_DATA["photo-hangar"])}
-                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3.5 rotate-[-3deg] transition-all ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalEvidence(EVIDENCE_DATA["photo-hangar"]);
+                }}
+                className={`evidence-interactive photo-shadow relative cursor-pointer bg-[oklch(0.84_0.03_85)] p-1.5 pb-3 rotate-[-1deg] transition-all ${
                   isItemDimmed("photo-hangar")
                     ? "evidence-dimmed"
-                    : isItemHighlighted("photo-hangar")
-                      ? "evidence-highlighted scale-105"
+                    : isItemHighlighted("photo-hangar") || activeEvidenceId === "photo-hangar"
+                      ? "evidence-highlighted scale-[1.02]"
                       : ""
                 }`}
               >
-                <Pin className="left-1/2 top-[-6px]" label="Hangar Pin" />
+                <Pin
+                  className="left-1/2 top-[-6px]"
+                  label="Hangar Pin"
+                  isActive={activeEvidenceId === "photo-hangar"}
+                  isHighlighted={isItemHighlighted("photo-hangar")}
+                />
                 <img
                   src={photo3}
                   alt="Evidence photograph of hangar at night"
-                  className="aspect-[3/5] w-full object-cover contrast-[0.95] saturate-[0.4] brightness-[0.75]"
+                  className="aspect-[4/3] w-full object-cover contrast-[0.95] saturate-[0.4] brightness-[0.75]"
                 />
                 <div className="mt-1 flex items-center justify-between px-0.5 font-typewriter text-[7px] text-ink/80">
                   <span className="truncate">HANGAR 14</span>
                   <span>[INSPECT]</span>
                 </div>
               </div>
-
-              {/* Document 6: Case File 07-B */}
               <div
                 tabIndex={0}
                 role="button"
-                aria-label="Inspect Case File 07-B Document"
-                onClick={() => setModalEvidence(EVIDENCE_DATA["case-file"])}
-                className={`evidence-interactive paper-shadow relative flex flex-col justify-between cursor-pointer rotate-[2deg] p-3 transition-all ${
+                aria-label="Inspect Case File 07-B Manifest Document"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalEvidence(EVIDENCE_DATA["case-file"]);
+                }}
+                className={`evidence-interactive paper-shadow relative flex flex-col justify-between cursor-pointer rotate-[1deg] p-2.5 transition-all ${
                   isItemDimmed("case-file")
                     ? "evidence-dimmed"
-                    : isItemHighlighted("case-file")
-                      ? "evidence-highlighted scale-105"
+                    : isItemHighlighted("case-file") || activeEvidenceId === "case-file"
+                      ? "evidence-highlighted scale-[1.02]"
                       : ""
                 }`}
                 style={{ backgroundImage: `url(${paper})`, backgroundSize: "cover" }}
               >
-                <Pin className="left-1/2 top-[-6px]" label="Case File Pin" />
+                <Pin
+                  className="left-1/2 top-[-6px]"
+                  label="Case File Pin"
+                  isActive={activeEvidenceId === "case-file"}
+                  isHighlighted={isItemHighlighted("case-file")}
+                />
                 <span className="pointer-events-none absolute inset-0 bg-[oklch(0.5_0.06_70)]/25 mix-blend-multiply" />
-                <p className="relative z-10 font-typewriter text-[8px] sm:text-[9px] leading-relaxed text-ink/85">
+                <p className="relative z-10 font-typewriter text-[8px] sm:text-[9px] leading-snug text-ink/85">
                   <strong>CASE FILE 07-B</strong>
                   <br />
                   MANIFEST: CARGO
@@ -1739,54 +1703,103 @@ function ContactPage() {
                   <br />
                   STATUS: OPEN
                 </p>
-                <span className="relative z-10 mt-2 block font-typewriter text-[7px] text-gold underline">
-                  Inspect File →
+                <span className="relative z-10 mt-1.5 block font-typewriter text-[7px] text-gold underline">
+                  [INSPECT DOSSIER]
                 </span>
               </div>
-
-              {/* Document 7: Coordinate Note */}
+            </div>
+          </div>
+          <div className="relative mb-6">
+            <svg
+              className="pointer-events-none absolute inset-x-0 -top-2 z-20 h-10 w-full"
+              viewBox="0 0 100 40"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                stroke="oklch(0.38 0.14 26)"
+                strokeWidth="1.3"
+                fill="none"
+                strokeLinecap="round"
+              />
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                pathLength={300}
+                stroke="oklch(0.16 0.08 24)"
+                strokeWidth="1.8"
+                strokeDasharray="65 35 45 155"
+                className="blood-flow-viscous"
+                fill="none"
+                style={{ opacity: 0.8, "--flow-duration": "10.2s", "--flow-delay": "-3.2s" } as React.CSSProperties}
+              />
+              <path
+                d="M 25 10 Q 50 24, 75 10"
+                pathLength={300}
+                stroke="oklch(0.26 0.16 26)"
+                strokeWidth="1.4"
+                strokeDasharray="50 50 30 170"
+                className="blood-flow-density"
+                fill="none"
+                style={{ "--flow-duration": "10.2s", "--flow-delay": "-3.45s", "--pulse-duration": "4.6s", "--pulse-delay": "-1.4s" } as React.CSSProperties}
+              />
+            </svg>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div
                 tabIndex={0}
                 role="button"
-                aria-label="Inspect Coordinate Note"
-                onClick={() => setModalEvidence(EVIDENCE_DATA["coord-note"])}
-                className={`evidence-interactive paper-shadow relative cursor-pointer rotate-[-2deg] p-3 transition-all ${
+                aria-label="Inspect Tactical Coordinate Note"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalEvidence(EVIDENCE_DATA["coord-note"]);
+                }}
+                className={`evidence-interactive paper-shadow relative flex flex-col justify-between cursor-pointer rotate-[-1deg] p-2.5 transition-all ${
                   isItemDimmed("coord-note")
                     ? "evidence-dimmed"
-                    : isItemHighlighted("coord-note")
-                      ? "evidence-highlighted scale-105"
+                    : isItemHighlighted("coord-note") || activeEvidenceId === "coord-note"
+                      ? "evidence-highlighted scale-[1.02]"
                       : ""
                 }`}
                 style={{ backgroundImage: `url(${paper})`, backgroundSize: "cover" }}
               >
-                <Pin className="left-1/2 top-[-6px]" label="Coordinate Note Pin" />
+                <Pin
+                  className="left-1/2 top-[-6px]"
+                  label="Coordinate Note Pin"
+                  isActive={activeEvidenceId === "coord-note"}
+                  isHighlighted={isItemHighlighted("coord-note")}
+                />
                 <span className="pointer-events-none absolute inset-0 bg-[oklch(0.45_0.09_75)]/20 mix-blend-multiply" />
                 <p className="relative z-10 font-hand text-base sm:text-lg leading-tight text-ink">
                   30.3466° N
                   <br />
                   76.5121° E
                 </p>
-                <span className="relative z-10 mt-1 block font-typewriter text-[7px] text-ink/60">
-                  Patiala Sector
+                <span className="relative z-10 mt-1 block font-typewriter text-[7px] text-ink/70">
+                  Patiala Sector Beacon
                 </span>
               </div>
-
-              {/* Map Card 8 */}
               <div
                 tabIndex={0}
                 role="button"
                 aria-label="Inspect Tactical Sector Map"
-                onClick={() => setModalEvidence(EVIDENCE_DATA["map-evidence"])}
-                className={`evidence-interactive paper-shadow relative cursor-pointer rotate-[1.5deg] overflow-hidden p-1.5 transition-all ${
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalEvidence(EVIDENCE_DATA["map-evidence"]);
+                }}
+                className={`evidence-interactive paper-shadow relative cursor-pointer rotate-[1deg] p-1.5 pb-3 transition-all bg-[oklch(0.84_0.03_85)] ${
                   isItemDimmed("map-evidence")
                     ? "evidence-dimmed"
-                    : isItemHighlighted("map-evidence")
-                      ? "evidence-highlighted scale-105"
+                    : isItemHighlighted("map-evidence") || activeEvidenceId === "map-evidence"
+                      ? "evidence-highlighted scale-[1.02]"
                       : ""
                 }`}
-                style={{ backgroundImage: `url(${paper})`, backgroundSize: "cover" }}
               >
-                <Pin className="left-1/2 top-[-6px]" label="Sector Map Pin" />
+                <Pin
+                  className="left-1/2 top-[-6px]"
+                  label="Sector Map Pin"
+                  isActive={activeEvidenceId === "map-evidence"}
+                  isHighlighted={isItemHighlighted("map-evidence")}
+                />
                 <img
                   src={mapImg}
                   alt="Tactical sector map"
@@ -1799,10 +1812,8 @@ function ContactPage() {
               </div>
             </div>
           </div>
-
-          {/* Main Dispatch Document (Contact Form on Mobile) */}
           <section
-            className="evidence-interactive paper-shadow relative mx-auto mt-6 w-full max-w-sm rotate-[-0.6deg] p-5 sm:p-6 text-ink"
+            className="evidence-interactive paper-shadow relative mx-auto mt-6 w-full max-w-sm rotate-[-0.6deg] p-4 sm:p-6 text-ink"
             onClick={(e) => e.stopPropagation()}
           >
             <span
@@ -1815,11 +1826,9 @@ function ContactPage() {
             />
             <Pin className="left-[6%] top-[-8px]" label="Top Left Form Pin" />
             <Pin className="right-[6%] top-[-8px]" label="Top Right Form Pin" />
-
             <h2 className="font-typewriter text-base sm:text-lg tracking-wide text-ink">
               SEND US A MESSAGE
             </h2>
-
             {sent ? (
               <div className="mt-3 border border-ink/30 bg-ink/5 p-3.5 font-typewriter text-ink">
                 <div className="flex items-center gap-2 text-xs font-bold text-[oklch(0.42_0.16_27)]">
@@ -1896,7 +1905,6 @@ function ContactPage() {
                     </p>
                   )}
                 </div>
-
                 <div className="flex justify-center pt-1">
                   <button
                     type="submit"
@@ -1915,7 +1923,6 @@ function ContactPage() {
                 </div>
               </form>
             )}
-
             <h3 className="mt-5 border-b border-ink/30 pb-1 font-typewriter text-sm tracking-wide text-ink">
               REACH US AT
             </h3>
@@ -1942,8 +1949,6 @@ function ContactPage() {
           </section>
         </div>
       </div>
-
-      {/* EVIDENCE DETAIL MODAL */}
       {modalEvidence && (
         <EvidenceModal
           evidence={modalEvidence}
@@ -1957,10 +1962,6 @@ function ContactPage() {
     </main>
   );
 }
-
-/* -------------------------------------------------------------------------- */
-/*                                   ICONS                                    */
-/* -------------------------------------------------------------------------- */
 
 const iconClass = "mt-[2px] h-3.5 w-3.5 shrink-0 stroke-ink";
 
@@ -2007,5 +2008,3 @@ function PinIcon() {
     </svg>
   );
 }
-
-
