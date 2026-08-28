@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useEffect, useCallback, type FormEvent } from "react";
+import { useState, useEffect, useRef, useCallback, type FormEvent } from "react";
 
 import board from "@/assets/board.jpg";
 import paper from "@/assets/paper.jpg";
@@ -359,6 +359,124 @@ const THREAD_SEGMENTS: ThreadSegment[] = [
   },
 ];
 
+/* -------------------------------------------------------------------------- */
+/*                     MOBILE RESPONSIVE THREAD DEFINITIONS                   */
+/* -------------------------------------------------------------------------- */
+
+interface MobileThreadDef {
+  from: string;
+  to: string;
+  duration: number;
+  delay: number;
+  pulseDuration: number;
+  pulseDelay: number;
+  curveDirection?: number;
+  evidenceIds: string[];
+}
+
+const MOBILE_THREAD_DEFS: MobileThreadDef[] = [
+  {
+    from: "pin-mob-contact",
+    to: "pin-mob-terminal",
+    duration: 11.5,
+    delay: -2.0,
+    pulseDuration: 5.0,
+    pulseDelay: -1.0,
+    curveDirection: -1,
+    evidenceIds: ["contact-note", "photo-terminal"],
+  },
+  {
+    from: "pin-mob-terminal",
+    to: "pin-mob-cargo",
+    duration: 10.0,
+    delay: -5.5,
+    pulseDuration: 4.5,
+    pulseDelay: -2.8,
+    curveDirection: 1,
+    evidenceIds: ["photo-terminal", "photo-cargo"],
+  },
+  {
+    from: "pin-mob-cargo",
+    to: "pin-mob-airliner",
+    duration: 13.5,
+    delay: -3.8,
+    pulseDuration: 6.0,
+    pulseDelay: -4.5,
+    curveDirection: 1,
+    evidenceIds: ["photo-cargo", "photo-airliner"],
+  },
+  {
+    from: "pin-mob-cargo",
+    to: "pin-mob-hangar",
+    duration: 12.0,
+    delay: -7.0,
+    pulseDuration: 5.2,
+    pulseDelay: -1.5,
+    curveDirection: -1,
+    evidenceIds: ["photo-cargo", "photo-hangar"],
+  },
+  {
+    from: "pin-mob-airliner",
+    to: "pin-mob-airfield",
+    duration: 10.5,
+    delay: -1.2,
+    pulseDuration: 4.8,
+    pulseDelay: -0.8,
+    curveDirection: 1,
+    evidenceIds: ["photo-airliner", "photo-airfield"],
+  },
+  {
+    from: "pin-mob-airfield",
+    to: "pin-mob-coord",
+    duration: 11.0,
+    delay: -4.0,
+    pulseDuration: 5.0,
+    pulseDelay: -2.0,
+    curveDirection: 1,
+    evidenceIds: ["photo-airfield", "coord-note"],
+  },
+  {
+    from: "pin-mob-hangar",
+    to: "pin-mob-casefile",
+    duration: 9.8,
+    delay: -6.2,
+    pulseDuration: 4.4,
+    pulseDelay: -3.0,
+    curveDirection: 1,
+    evidenceIds: ["photo-hangar", "case-file"],
+  },
+  {
+    from: "pin-mob-casefile",
+    to: "pin-mob-map",
+    duration: 12.5,
+    delay: -2.5,
+    pulseDuration: 5.5,
+    pulseDelay: -1.2,
+    curveDirection: -1,
+    evidenceIds: ["case-file", "map-evidence"],
+  },
+  {
+    from: "pin-mob-coord",
+    to: "pin-mob-map",
+    duration: 10.2,
+    delay: -8.0,
+    pulseDuration: 4.6,
+    pulseDelay: -3.5,
+    curveDirection: 1,
+    evidenceIds: ["coord-note", "map-evidence"],
+  },
+  {
+    from: "pin-mob-casefile",
+    to: "pin-mob-doc",
+    duration: 14.0,
+    delay: -4.5,
+    pulseDuration: 6.2,
+    pulseDelay: -2.2,
+    curveDirection: 1,
+    evidenceIds: ["case-file", "main-doc"],
+  },
+];
+
 interface PinData {
   id: string;
   label: string;
@@ -431,6 +549,7 @@ function Pin({
   onMouseEnter,
   onMouseLeave,
   label = "Evidence Pin",
+  dataPinNode,
 }: {
   className?: string;
   isActive?: boolean;
@@ -439,10 +558,12 @@ function Pin({
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   label?: string;
+  dataPinNode?: string;
 }) {
   return (
     <button
       type="button"
+      data-pin-node={dataPinNode}
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -690,6 +811,79 @@ function ContactPage() {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
+  const mobileBoardRef = useRef<HTMLDivElement>(null);
+  const [mobileThreadPaths, setMobileThreadPaths] = useState<string[]>([]);
+
+  const updateMobileThreads = useCallback(() => {
+    if (!mobileBoardRef.current) return;
+    const boardEl = mobileBoardRef.current;
+    const boardRect = boardEl.getBoundingClientRect();
+    if (boardRect.width === 0 || boardRect.height === 0) return;
+
+    const paths = MOBILE_THREAD_DEFS.map((def) => {
+      const fromEl = boardEl.querySelector(`[data-pin-node="${def.from}"]`);
+      const toEl = boardEl.querySelector(`[data-pin-node="${def.to}"]`);
+      if (!fromEl || !toEl) return "";
+
+      const fromRect = fromEl.getBoundingClientRect();
+      const toRect = toEl.getBoundingClientRect();
+
+      const p1 = {
+        x: fromRect.left + fromRect.width / 2 - boardRect.left,
+        y: fromRect.top + fromRect.height / 2 - boardRect.top,
+      };
+      const p2 = {
+        x: toRect.left + toRect.width / 2 - boardRect.left,
+        y: toRect.top + toRect.height / 2 - boardRect.top,
+      };
+
+      const dx = p2.x - p1.x;
+      const dy = p2.y - p1.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist === 0) return "";
+
+      const nx = -dy / dist;
+      const ny = dx / dist;
+      const dir = def.curveDirection ?? 1;
+      const sag = Math.min(Math.max(dist * 0.08, 6), 22) * dir;
+
+      const cx = (p1.x + p2.x) / 2 + nx * sag;
+      const cy = (p1.y + p2.y) / 2 + ny * sag + Math.min(dist * 0.04, 10);
+
+      return `M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} Q ${cx.toFixed(1)} ${cy.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+    });
+
+    setMobileThreadPaths(paths);
+  }, []);
+
+  useEffect(() => {
+    updateMobileThreads();
+
+    const boardEl = mobileBoardRef.current;
+    if (!boardEl) return;
+
+    const ro = new ResizeObserver(() => {
+      updateMobileThreads();
+    });
+    ro.observe(boardEl);
+
+    window.addEventListener("resize", updateMobileThreads);
+    window.addEventListener("orientationchange", updateMobileThreads);
+
+    if ("fonts" in document) {
+      document.fonts.ready.then(updateMobileThreads);
+    }
+
+    const timer = setTimeout(updateMobileThreads, 150);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", updateMobileThreads);
+      window.removeEventListener("orientationchange", updateMobileThreads);
+      clearTimeout(timer);
+    };
+  }, [updateMobileThreads]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && activeEvidenceId && !modalEvidence) {
@@ -706,10 +900,13 @@ function ContactPage() {
     (id: string) => {
       if (!activeFocusId) return false;
       if (activeFocusId === id) return true;
+
       const pin = PIN_DATA.find((p) => p.id === activeFocusId);
       if (pin && pin.connectedEvidenceIds.includes(id)) return true;
+
       const ev = EVIDENCE_DATA[activeFocusId];
       if (ev && (ev.connectedEvidenceIds.includes(id) || ev.connectedPins.includes(id))) return true;
+
       return false;
     },
     [activeFocusId]
@@ -728,11 +925,24 @@ function ContactPage() {
       if (!activeFocusId) return false;
       const seg = THREAD_SEGMENTS[idx];
       if (!seg) return false;
+
       const pin = PIN_DATA.find((p) => p.id === activeFocusId);
       if (pin && pin.connectedThreads.includes(idx)) return true;
+
       const ev = EVIDENCE_DATA[activeFocusId];
       if (ev && ev.connectedThreads.includes(idx)) return true;
+
       return false;
+    },
+    [activeFocusId]
+  );
+
+  const isMobileThreadHighlighted = useCallback(
+    (idx: number) => {
+      if (!activeFocusId) return false;
+      const def = MOBILE_THREAD_DEFS[idx];
+      if (!def) return false;
+      return def.evidenceIds.includes(activeFocusId);
     },
     [activeFocusId]
   );
@@ -980,7 +1190,6 @@ function ContactPage() {
               ))}
             </g>
           </svg>
-
           <div
             tabIndex={0}
             role="button"
@@ -1012,7 +1221,6 @@ function ContactPage() {
               className="paper-shadow h-full w-full object-cover rotate-[4deg] opacity-90 brightness-[0.68] sepia-[0.4] transition-all duration-300 hover:brightness-[0.82]"
             />
           </div>
-
           <div
             tabIndex={0}
             role="button"
@@ -1065,7 +1273,6 @@ function ContactPage() {
               We&apos;re listening.
             </p>
           </div>
-
           <Photo
             evidence={EVIDENCE_DATA["photo-terminal"]}
             className="left-[27%] top-[3%] w-[14%]"
@@ -1348,6 +1555,7 @@ function ContactPage() {
         </div>
 
         <div
+          ref={mobileBoardRef}
           className="board-vignette relative block w-full select-none p-3 sm:p-5 md:hidden"
           style={{
             backgroundImage: `url(${board})`,
@@ -1358,6 +1566,133 @@ function ContactPage() {
             if (activeEvidenceId) setActiveEvidenceId(null);
           }}
         >
+          <svg
+            className="pointer-events-none absolute inset-0 z-20 h-full w-full"
+            aria-hidden="true"
+          >
+            <g
+              stroke="oklch(0.38 0.14 26)"
+              strokeWidth="1.2"
+              fill="none"
+              opacity="0.82"
+              strokeLinecap="round"
+            >
+              {mobileThreadPaths.map((d, i) => {
+                if (!d) return null;
+                return (
+                  <path
+                    key={`mob-base-${i}`}
+                    d={d}
+                    className={
+                      isMobileThreadHighlighted(i)
+                        ? "stroke-[oklch(0.48_0.18_27)] stroke-[1.7px]"
+                        : activeFocusId
+                          ? "thread-dimmed"
+                          : ""
+                    }
+                  />
+                );
+              })}
+            </g>
+            <g fill="none" style={{ mixBlendMode: "multiply" }}>
+              {mobileThreadPaths.map((d, i) => {
+                if (!d) return null;
+                const def = MOBILE_THREAD_DEFS[i];
+                return (
+                  <path
+                    key={`mob-stain-${i}`}
+                    d={d}
+                    pathLength={300}
+                    stroke="oklch(0.16 0.08 24)"
+                    strokeWidth="1.7"
+                    strokeDasharray="65 35 45 155"
+                    className={`blood-flow-viscous ${
+                      isMobileThreadHighlighted(i)
+                        ? "thread-highlighted"
+                        : activeFocusId
+                          ? "thread-dimmed"
+                          : ""
+                    }`}
+                    style={
+                      {
+                        opacity: isMobileThreadHighlighted(i) ? 0.95 : 0.75,
+                        "--flow-duration": isMobileThreadHighlighted(i)
+                          ? `${def.duration * 0.75}s`
+                          : `${def.duration}s`,
+                        "--flow-delay": `${def.delay}s`,
+                      } as React.CSSProperties
+                    }
+                  />
+                );
+              })}
+            </g>
+            <g fill="none">
+              {mobileThreadPaths.map((d, i) => {
+                if (!d) return null;
+                const def = MOBILE_THREAD_DEFS[i];
+                return (
+                  <path
+                    key={`mob-core-${i}`}
+                    d={d}
+                    pathLength={300}
+                    stroke="oklch(0.26 0.16 26)"
+                    strokeWidth={isMobileThreadHighlighted(i) ? 1.8 : 1.35}
+                    strokeDasharray="50 50 30 170"
+                    className={`blood-flow-density ${
+                      isMobileThreadHighlighted(i)
+                        ? "thread-highlighted"
+                        : activeFocusId
+                          ? "thread-dimmed"
+                          : ""
+                    }`}
+                    style={
+                      {
+                        "--flow-duration": isMobileThreadHighlighted(i)
+                          ? `${def.duration * 0.75}s`
+                          : `${def.duration}s`,
+                        "--flow-delay": `${def.delay - 0.25}s`,
+                        "--pulse-duration": `${def.pulseDuration}s`,
+                        "--pulse-delay": `${def.pulseDelay}s`,
+                      } as React.CSSProperties
+                    }
+                  />
+                );
+              })}
+            </g>
+            <g fill="none">
+              {mobileThreadPaths.map((d, i) => {
+                if (!d) return null;
+                const def = MOBILE_THREAD_DEFS[i];
+                return (
+                  <path
+                    key={`mob-specular-${i}`}
+                    d={d}
+                    pathLength={300}
+                    stroke="rgba(245, 200, 200, 0.45)"
+                    strokeWidth="0.65"
+                    strokeDasharray="22 78 12 188"
+                    className={`blood-flow-specular ${
+                      isMobileThreadHighlighted(i)
+                        ? "thread-highlighted"
+                        : activeFocusId
+                          ? "thread-dimmed"
+                          : ""
+                    }`}
+                    style={
+                      {
+                        "--flow-duration": isMobileThreadHighlighted(i)
+                          ? `${def.duration * 0.75}s`
+                          : `${def.duration}s`,
+                        "--flow-delay": `${def.delay - 0.2}s`,
+                        "--pulse-duration": `${def.pulseDuration}s`,
+                        "--pulse-delay": `${def.pulseDelay}s`,
+                      } as React.CSSProperties
+                    }
+                  />
+                );
+              })}
+            </g>
+          </svg>
           <div
             tabIndex={0}
             role="button"
@@ -1383,6 +1718,7 @@ function ContactPage() {
               }}
             />
             <Pin
+              dataPinNode="pin-mob-contact"
               className="left-1/2 top-[-6px]"
               label="Contact Memo Pin"
               isHighlighted={isItemHighlighted("contact-note")}
@@ -1397,42 +1733,7 @@ function ContactPage() {
               We&apos;re listening.
             </p>
           </div>
-
           <div className="relative mb-5">
-            <svg
-              className="pointer-events-none absolute inset-x-0 -top-2 z-20 h-10 w-full"
-              viewBox="0 0 100 40"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                stroke="oklch(0.38 0.14 26)"
-                strokeWidth="1.3"
-                fill="none"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                pathLength={300}
-                stroke="oklch(0.16 0.08 24)"
-                strokeWidth="1.8"
-                strokeDasharray="65 35 45 155"
-                className="blood-flow-viscous"
-                fill="none"
-                style={{ opacity: 0.8, "--flow-duration": "10s", "--flow-delay": "-2s" } as React.CSSProperties}
-              />
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                pathLength={300}
-                stroke="oklch(0.26 0.16 26)"
-                strokeWidth="1.4"
-                strokeDasharray="50 50 30 170"
-                className="blood-flow-density"
-                fill="none"
-                style={{ "--flow-duration": "10s", "--flow-delay": "-2.25s", "--pulse-duration": "4.5s", "--pulse-delay": "-1s" } as React.CSSProperties}
-              />
-            </svg>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div
                 tabIndex={0}
@@ -1451,6 +1752,7 @@ function ContactPage() {
                 }`}
               >
                 <Pin
+                  dataPinNode="pin-mob-terminal"
                   className="left-1/2 top-[-6px]"
                   label="Terminal Photo Pin"
                   isActive={activeEvidenceId === "photo-terminal"}
@@ -1483,6 +1785,7 @@ function ContactPage() {
                 }`}
               >
                 <Pin
+                  dataPinNode="pin-mob-cargo"
                   className="left-1/2 top-[-6px]"
                   label="Cargo Freighter Pin"
                   isActive={activeEvidenceId === "photo-cargo"}
@@ -1501,40 +1804,6 @@ function ContactPage() {
             </div>
           </div>
           <div className="relative mb-5">
-            <svg
-              className="pointer-events-none absolute inset-x-0 -top-2 z-20 h-10 w-full"
-              viewBox="0 0 100 40"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                stroke="oklch(0.38 0.14 26)"
-                strokeWidth="1.3"
-                fill="none"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                pathLength={300}
-                stroke="oklch(0.16 0.08 24)"
-                strokeWidth="1.8"
-                strokeDasharray="65 35 45 155"
-                className="blood-flow-viscous"
-                fill="none"
-                style={{ opacity: 0.8, "--flow-duration": "11.5s", "--flow-delay": "-4s" } as React.CSSProperties}
-              />
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                pathLength={300}
-                stroke="oklch(0.26 0.16 26)"
-                strokeWidth="1.4"
-                strokeDasharray="50 50 30 170"
-                className="blood-flow-density"
-                fill="none"
-                style={{ "--flow-duration": "11.5s", "--flow-delay": "-4.25s", "--pulse-duration": "5s", "--pulse-delay": "-2s" } as React.CSSProperties}
-              />
-            </svg>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div
                 tabIndex={0}
@@ -1553,6 +1822,7 @@ function ContactPage() {
                 }`}
               >
                 <Pin
+                  dataPinNode="pin-mob-airliner"
                   className="left-1/2 top-[-6px]"
                   label="Airliner Pin"
                   isActive={activeEvidenceId === "photo-airliner"}
@@ -1585,6 +1855,7 @@ function ContactPage() {
                 }`}
               >
                 <Pin
+                  dataPinNode="pin-mob-airfield"
                   className="left-1/2 top-[-6px]"
                   label="Airfield Recon Pin"
                   isActive={activeEvidenceId === "photo-airfield"}
@@ -1603,40 +1874,6 @@ function ContactPage() {
             </div>
           </div>
           <div className="relative mb-5">
-            <svg
-              className="pointer-events-none absolute inset-x-0 -top-2 z-20 h-10 w-full"
-              viewBox="0 0 100 40"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                stroke="oklch(0.38 0.14 26)"
-                strokeWidth="1.3"
-                fill="none"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                pathLength={300}
-                stroke="oklch(0.16 0.08 24)"
-                strokeWidth="1.8"
-                strokeDasharray="65 35 45 155"
-                className="blood-flow-viscous"
-                fill="none"
-                style={{ opacity: 0.8, "--flow-duration": "12.8s", "--flow-delay": "-1.5s" } as React.CSSProperties}
-              />
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                pathLength={300}
-                stroke="oklch(0.26 0.16 26)"
-                strokeWidth="1.4"
-                strokeDasharray="50 50 30 170"
-                className="blood-flow-density"
-                fill="none"
-                style={{ "--flow-duration": "12.8s", "--flow-delay": "-1.75s", "--pulse-duration": "5.2s", "--pulse-delay": "-0.8s" } as React.CSSProperties}
-              />
-            </svg>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div
                 tabIndex={0}
@@ -1655,6 +1892,7 @@ function ContactPage() {
                 }`}
               >
                 <Pin
+                  dataPinNode="pin-mob-hangar"
                   className="left-1/2 top-[-6px]"
                   label="Hangar Pin"
                   isActive={activeEvidenceId === "photo-hangar"}
@@ -1688,6 +1926,7 @@ function ContactPage() {
                 style={{ backgroundImage: `url(${paper})`, backgroundSize: "cover" }}
               >
                 <Pin
+                  dataPinNode="pin-mob-casefile"
                   className="left-1/2 top-[-6px]"
                   label="Case File Pin"
                   isActive={activeEvidenceId === "case-file"}
@@ -1710,40 +1949,6 @@ function ContactPage() {
             </div>
           </div>
           <div className="relative mb-6">
-            <svg
-              className="pointer-events-none absolute inset-x-0 -top-2 z-20 h-10 w-full"
-              viewBox="0 0 100 40"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                stroke="oklch(0.38 0.14 26)"
-                strokeWidth="1.3"
-                fill="none"
-                strokeLinecap="round"
-              />
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                pathLength={300}
-                stroke="oklch(0.16 0.08 24)"
-                strokeWidth="1.8"
-                strokeDasharray="65 35 45 155"
-                className="blood-flow-viscous"
-                fill="none"
-                style={{ opacity: 0.8, "--flow-duration": "10.2s", "--flow-delay": "-3.2s" } as React.CSSProperties}
-              />
-              <path
-                d="M 25 10 Q 50 24, 75 10"
-                pathLength={300}
-                stroke="oklch(0.26 0.16 26)"
-                strokeWidth="1.4"
-                strokeDasharray="50 50 30 170"
-                className="blood-flow-density"
-                fill="none"
-                style={{ "--flow-duration": "10.2s", "--flow-delay": "-3.45s", "--pulse-duration": "4.6s", "--pulse-delay": "-1.4s" } as React.CSSProperties}
-              />
-            </svg>
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div
                 tabIndex={0}
@@ -1763,6 +1968,7 @@ function ContactPage() {
                 style={{ backgroundImage: `url(${paper})`, backgroundSize: "cover" }}
               >
                 <Pin
+                  dataPinNode="pin-mob-coord"
                   className="left-1/2 top-[-6px]"
                   label="Coordinate Note Pin"
                   isActive={activeEvidenceId === "coord-note"}
@@ -1795,6 +2001,7 @@ function ContactPage() {
                 }`}
               >
                 <Pin
+                  dataPinNode="pin-mob-map"
                   className="left-1/2 top-[-6px]"
                   label="Sector Map Pin"
                   isActive={activeEvidenceId === "map-evidence"}
@@ -1824,11 +2031,13 @@ function ContactPage() {
                 backgroundPosition: "center",
               }}
             />
-            <Pin className="left-[6%] top-[-8px]" label="Top Left Form Pin" />
+            <Pin dataPinNode="pin-mob-doc" className="left-[6%] top-[-8px]" label="Top Left Form Pin" />
             <Pin className="right-[6%] top-[-8px]" label="Top Right Form Pin" />
+
             <h2 className="font-typewriter text-base sm:text-lg tracking-wide text-ink">
               SEND US A MESSAGE
             </h2>
+
             {sent ? (
               <div className="mt-3 border border-ink/30 bg-ink/5 p-3.5 font-typewriter text-ink">
                 <div className="flex items-center gap-2 text-xs font-bold text-[oklch(0.42_0.16_27)]">
@@ -1905,6 +2114,7 @@ function ContactPage() {
                     </p>
                   )}
                 </div>
+
                 <div className="flex justify-center pt-1">
                   <button
                     type="submit"
@@ -1923,6 +2133,7 @@ function ContactPage() {
                 </div>
               </form>
             )}
+
             <h3 className="mt-5 border-b border-ink/30 pb-1 font-typewriter text-sm tracking-wide text-ink">
               REACH US AT
             </h3>
@@ -1949,6 +2160,7 @@ function ContactPage() {
           </section>
         </div>
       </div>
+
       {modalEvidence && (
         <EvidenceModal
           evidence={modalEvidence}
@@ -1962,6 +2174,10 @@ function ContactPage() {
     </main>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                                   ICONS                                    */
+/* -------------------------------------------------------------------------- */
 
 const iconClass = "mt-[2px] h-3.5 w-3.5 shrink-0 stroke-ink";
 
