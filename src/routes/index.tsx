@@ -1801,7 +1801,10 @@ function ContactPage() {
           </div>
 
           {/* Main Dispatch Document (Contact Form on Mobile) */}
-          <section className="relative mx-auto mt-6 w-full max-w-sm p-4 sm:p-5">
+          <section
+            className="evidence-interactive paper-shadow relative mx-auto mt-6 w-full max-w-sm rotate-[-0.6deg] p-5 sm:p-6 text-ink"
+            onClick={(e) => e.stopPropagation()}
+          >
             <span
               className="paper-aged pointer-events-none absolute inset-0 -z-10"
               style={{
@@ -1810,33 +1813,35 @@ function ContactPage() {
                 backgroundPosition: "center",
               }}
             />
-            <Pin className="left-[8%] top-[-6px]" label="Top Left Form Pin" />
-            <Pin className="right-[8%] top-[-6px]" label="Top Right Form Pin" />
+            <Pin className="left-[6%] top-[-8px]" label="Top Left Form Pin" />
+            <Pin className="right-[6%] top-[-8px]" label="Top Right Form Pin" />
 
-            <h2 className="font-typewriter text-base sm:text-lg font-bold tracking-wide text-ink">
+            <h2 className="font-typewriter text-base sm:text-lg tracking-wide text-ink">
               SEND US A MESSAGE
             </h2>
 
             {sent ? (
               <div className="mt-3 border border-ink/30 bg-ink/5 p-3.5 font-typewriter text-ink">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[oklch(0.42_0.16_27)]">
+                <div className="flex items-center gap-2 text-xs font-bold text-[oklch(0.42_0.16_27)]">
                   <span>✔</span>
                   <span>TRANSMISSION DISPATCHED</span>
                 </div>
-                <p className="mt-1.5 text-[11px] leading-relaxed text-ink/85">
-                  Your lead is encrypted under ref <strong>#IX-8492</strong>. Our task force is on
-                  it.
+                <p className="mt-2 text-[11px] leading-5 text-ink/85">
+                  Your lead has been encrypted and logged under reference <strong>#IX-8492</strong>.
+                  Our task force is cross-referencing your report.
                 </p>
-                <button
-                  type="button"
-                  onClick={handleResetForm}
-                  className="mt-3 w-full border border-ink/40 bg-[oklch(0.22_0.01_60)] py-2 font-typewriter text-[10px] tracking-widest text-[oklch(0.92_0.02_85)] hover:bg-[oklch(0.28_0.01_60)]"
-                >
-                  SEND ANOTHER REPORT
-                </button>
+                <div className="mt-3 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleResetForm}
+                    className="border border-ink/40 bg-[oklch(0.22_0.01_60)] px-5 py-1.5 font-typewriter text-[10px] tracking-widest text-[oklch(0.92_0.02_85)] hover:bg-[oklch(0.28_0.01_60)]"
+                  >
+                    SEND ANOTHER REPORT
+                  </button>
+                </div>
               </div>
             ) : (
-              <form onSubmit={onSubmit} className="mt-3 space-y-2.5">
+              <form onSubmit={onSubmit} className="mt-3.5 space-y-2.5">
                 {(["name", "email", "subject"] as const).map((field) => {
                   const label = field.toUpperCase();
                   const err = formErrors[field];
@@ -1855,12 +1860,14 @@ function ContactPage() {
                             setFormErrors(updated);
                           }
                         }}
-                        className={`paper-field h-10 w-full px-3 py-2 font-typewriter text-[11px] tracking-wide transition-all ${
+                        className={`paper-field w-full px-3 py-2 font-typewriter text-[11px] tracking-wide transition-all ${
                           err ? "border-red-600 bg-red-950/10" : ""
                         }`}
                       />
                       {err && (
-                        <p className="mt-0.5 font-typewriter text-[9px] text-red-800">{err}</p>
+                        <p className="mt-0.5 font-typewriter text-[8px] sm:text-[9px] text-red-800">
+                          {err}
+                        </p>
                       )}
                     </div>
                   );
@@ -1884,46 +1891,52 @@ function ContactPage() {
                     }`}
                   />
                   {formErrors.message && (
-                    <p className="mt-0.5 font-typewriter text-[9px] text-red-800">
+                    <p className="mt-0.5 font-typewriter text-[8px] sm:text-[9px] text-red-800">
                       {formErrors.message}
                     </p>
                   )}
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex h-11 w-full items-center justify-center gap-2 bg-[oklch(0.22_0.01_60)] py-2 font-typewriter text-xs tracking-[0.18em] text-[oklch(0.92_0.02_85)] shadow-md transition-all hover:bg-[oklch(0.28_0.01_60)] active:scale-[0.98] disabled:opacity-60 cursor-pointer touch-manipulation"
-                >
-                  {submitting ? (
-                    <>
-                      <span className="inline-block h-2 w-2 rounded-full bg-gold animate-ping" />
-                      <span>ENCRYPTING...</span>
-                    </>
-                  ) : (
-                    "SUBMIT LEAD"
-                  )}
-                </button>
+                <div className="flex justify-center pt-1">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex items-center justify-center gap-2 bg-[oklch(0.22_0.01_60)] w-full py-2.5 font-typewriter text-[11px] tracking-[0.18em] text-[oklch(0.92_0.02_85)] shadow-[0_4px_10px_rgba(0,0,0,0.5)] transition-all hover:bg-[oklch(0.28_0.01_60)] active:scale-[0.98] disabled:opacity-60 cursor-pointer touch-manipulation"
+                  >
+                    {submitting ? (
+                      <>
+                        <span className="inline-block h-2 w-2 rounded-full bg-gold animate-ping" />
+                        <span>ENCRYPTING...</span>
+                      </>
+                    ) : (
+                      "SUBMIT"
+                    )}
+                  </button>
+                </div>
               </form>
             )}
 
-            <h3 className="mt-5 border-b border-ink/30 pb-1 font-typewriter text-xs font-bold uppercase tracking-wider text-ink">
+            <h3 className="mt-5 border-b border-ink/30 pb-1 font-typewriter text-sm tracking-wide text-ink">
               REACH US AT
             </h3>
-            <ul className="mt-2 space-y-1.5 font-typewriter text-[10px] leading-relaxed text-ink/90">
-              <li className="flex items-start gap-2">
+            <ul className="mt-2.5 space-y-1.5 font-typewriter text-[11px] leading-5 text-ink/90">
+              <li className="flex items-start gap-2.5">
                 <MailIcon />
                 <a href="mailto:intelx.taskforce@gmail.com" className="hover:underline">
                   intelx.taskforce@gmail.com
                 </a>
               </li>
-              <li className="flex items-start gap-2">
+              <li className="flex items-start gap-2.5">
                 <PhoneIcon />
                 <span>+91 98765 43210</span>
               </li>
-              <li className="flex items-start gap-2">
+              <li className="flex items-start gap-2.5">
                 <PinIcon />
-                <span>Thapar Institute of Engineering, Patiala</span>
+                <span>
+                  Thapar Institute of Engineering,
+                  <br />
+                  Patiala
+                </span>
               </li>
             </ul>
           </section>
