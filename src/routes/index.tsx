@@ -244,7 +244,7 @@ const EVIDENCE_DATA: Record<string, EvidenceItem> = {
 };
 
 /* -------------------------------------------------------------------------- */
-/*                          DESKTOP THREAD SEGMENTS                           */
+/*                     ORIGINAL DESKTOP THREAD SEGMENTS                       */
 /* -------------------------------------------------------------------------- */
 
 interface ThreadSegment {
@@ -375,105 +375,115 @@ interface MobileThreadDef {
 }
 
 const MOBILE_THREAD_DEFS: MobileThreadDef[] = [
+  // 0. contact-note -> photo-terminal
   {
     from: "pin-mob-contact",
     to: "pin-mob-terminal",
-    duration: 11.5,
-    delay: -2.0,
-    pulseDuration: 5.0,
-    pulseDelay: -1.0,
+    duration: 11.8,
+    delay: -2.4,
+    pulseDuration: 5.2,
+    pulseDelay: -1.1,
     curveDirection: -1,
     evidenceIds: ["contact-note", "photo-terminal"],
   },
+  // 1. photo-terminal -> photo-cargo
   {
     from: "pin-mob-terminal",
     to: "pin-mob-cargo",
-    duration: 10.0,
-    delay: -5.5,
-    pulseDuration: 4.5,
-    pulseDelay: -2.8,
+    duration: 9.6,
+    delay: -6.1,
+    pulseDuration: 4.4,
+    pulseDelay: -3.2,
     curveDirection: 1,
     evidenceIds: ["photo-terminal", "photo-cargo"],
   },
+  // 2. photo-cargo -> main-doc
+  {
+    from: "pin-mob-cargo",
+    to: "pin-mob-doc",
+    duration: 13.5,
+    delay: -4.3,
+    pulseDuration: 6.0,
+    pulseDelay: -4.8,
+    curveDirection: 1,
+    evidenceIds: ["photo-cargo", "main-doc"],
+  },
+  // 3. photo-cargo -> case-file
+  {
+    from: "pin-mob-cargo",
+    to: "pin-mob-casefile",
+    duration: 11.0,
+    delay: -8.2,
+    pulseDuration: 4.9,
+    pulseDelay: -2.3,
+    curveDirection: 1,
+    evidenceIds: ["photo-cargo", "case-file"],
+  },
+  // 4. photo-cargo -> photo-airliner
   {
     from: "pin-mob-cargo",
     to: "pin-mob-airliner",
-    duration: 13.5,
-    delay: -3.8,
-    pulseDuration: 6.0,
-    pulseDelay: -4.5,
+    duration: 14.2,
+    delay: -3.9,
+    pulseDuration: 6.5,
+    pulseDelay: -5.5,
     curveDirection: 1,
     evidenceIds: ["photo-cargo", "photo-airliner"],
   },
+  // 5. photo-cargo -> photo-hangar
   {
     from: "pin-mob-cargo",
     to: "pin-mob-hangar",
-    duration: 12.0,
-    delay: -7.0,
-    pulseDuration: 5.2,
-    pulseDelay: -1.5,
+    duration: 9.2,
+    delay: -0.8,
+    pulseDuration: 4.2,
+    pulseDelay: -0.4,
     curveDirection: -1,
     evidenceIds: ["photo-cargo", "photo-hangar"],
   },
+  // 6. photo-hangar -> photo-airliner
   {
-    from: "pin-mob-airliner",
-    to: "pin-mob-airfield",
-    duration: 10.5,
-    delay: -1.2,
-    pulseDuration: 4.8,
-    pulseDelay: -0.8,
+    from: "pin-mob-hangar",
+    to: "pin-mob-airliner",
+    duration: 15.0,
+    delay: -9.5,
+    pulseDuration: 6.8,
+    pulseDelay: -4.1,
     curveDirection: 1,
-    evidenceIds: ["photo-airliner", "photo-airfield"],
+    evidenceIds: ["photo-hangar", "photo-airliner"],
   },
-  {
-    from: "pin-mob-airfield",
-    to: "pin-mob-coord",
-    duration: 11.0,
-    delay: -4.0,
-    pulseDuration: 5.0,
-    pulseDelay: -2.0,
-    curveDirection: 1,
-    evidenceIds: ["photo-airfield", "coord-note"],
-  },
+  // 7. photo-hangar -> case-file
   {
     from: "pin-mob-hangar",
     to: "pin-mob-casefile",
-    duration: 9.8,
-    delay: -6.2,
-    pulseDuration: 4.4,
-    pulseDelay: -3.0,
+    duration: 10.4,
+    delay: -3.1,
+    pulseDuration: 4.7,
+    pulseDelay: -2.6,
     curveDirection: 1,
     evidenceIds: ["photo-hangar", "case-file"],
   },
+  // 8. photo-hangar -> photo-airfield
   {
-    from: "pin-mob-casefile",
-    to: "pin-mob-map",
-    duration: 12.5,
-    delay: -2.5,
-    pulseDuration: 5.5,
-    pulseDelay: -1.2,
+    from: "pin-mob-hangar",
+    to: "pin-mob-airfield",
+    duration: 12.6,
+    delay: -5.7,
+    pulseDuration: 5.6,
+    pulseDelay: -4.5,
     curveDirection: -1,
-    evidenceIds: ["case-file", "map-evidence"],
+    evidenceIds: ["photo-hangar", "photo-airfield"],
   },
+  // 9. photo-airfield -> coord-note
   {
-    from: "pin-mob-coord",
-    to: "pin-mob-map",
-    duration: 10.2,
-    delay: -8.0,
-    pulseDuration: 4.6,
-    pulseDelay: -3.5,
+    from: "pin-mob-airfield",
+    to: "pin-mob-coord",
+    duration: 11.4,
+    delay: -2.8,
+    pulseDuration: 5.1,
+    pulseDelay: -1.5,
     curveDirection: 1,
-    evidenceIds: ["coord-note", "map-evidence"],
-  },
-  {
-    from: "pin-mob-casefile",
-    to: "pin-mob-doc",
-    duration: 14.0,
-    delay: -4.5,
-    pulseDuration: 6.2,
-    pulseDelay: -2.2,
-    curveDirection: 1,
-    evidenceIds: ["case-file", "main-doc"],
+    evidenceIds: ["photo-airfield", "coord-note"],
   },
 ];
 
@@ -676,13 +686,11 @@ function EvidenceModal({
   onSelectEvidence: (id: string) => void;
 }) {
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
   return (
@@ -814,6 +822,7 @@ function ContactPage() {
   const mobileBoardRef = useRef<HTMLDivElement>(null);
   const [mobileThreadPaths, setMobileThreadPaths] = useState<string[]>([]);
 
+  // Function to compute exact pin-to-pin SVG paths in the mobile board
   const updateMobileThreads = useCallback(() => {
     if (!mobileBoardRef.current) return;
     const boardEl = mobileBoardRef.current;
@@ -842,6 +851,7 @@ function ContactPage() {
       const dist = Math.hypot(dx, dy);
       if (dist === 0) return "";
 
+      // Organic physical thread sag
       const nx = -dy / dist;
       const ny = dx / dist;
       const dir = def.curveDirection ?? 1;
@@ -856,6 +866,7 @@ function ContactPage() {
     setMobileThreadPaths(paths);
   }, []);
 
+  // Update dynamic thread paths on mount, resize, layout shift, or font load
   useEffect(() => {
     updateMobileThreads();
 
@@ -884,6 +895,7 @@ function ContactPage() {
     };
   }, [updateMobileThreads]);
 
+  // Keyboard escape handler for selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && activeEvidenceId && !modalEvidence) {
@@ -905,11 +917,12 @@ function ContactPage() {
       if (pin && pin.connectedEvidenceIds.includes(id)) return true;
 
       const ev = EVIDENCE_DATA[activeFocusId];
-      if (ev && (ev.connectedEvidenceIds.includes(id) || ev.connectedPins.includes(id))) return true;
+      if (ev && (ev.connectedEvidenceIds.includes(id) || ev.connectedPins.includes(id)))
+        return true;
 
       return false;
     },
-    [activeFocusId]
+    [activeFocusId],
   );
 
   const isItemDimmed = useCallback(
@@ -917,7 +930,7 @@ function ContactPage() {
       if (!activeFocusId) return false;
       return !isItemHighlighted(id);
     },
-    [activeFocusId, isItemHighlighted]
+    [activeFocusId, isItemHighlighted],
   );
 
   const isThreadHighlighted = useCallback(
@@ -934,7 +947,7 @@ function ContactPage() {
 
       return false;
     },
-    [activeFocusId]
+    [activeFocusId],
   );
 
   const isMobileThreadHighlighted = useCallback(
@@ -944,7 +957,7 @@ function ContactPage() {
       if (!def) return false;
       return def.evidenceIds.includes(activeFocusId);
     },
-    [activeFocusId]
+    [activeFocusId],
   );
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -1010,9 +1023,7 @@ function ContactPage() {
             aria-expanded={mobileMenuOpen}
             className="flex h-9 w-9 items-center justify-center border border-[oklch(0.35_0.02_70)] bg-[oklch(0.15_0.01_60)] text-[oklch(0.85_0.02_85)] md:hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-gold touch-manipulation"
           >
-            <span className="font-typewriter text-sm font-bold">
-              {mobileMenuOpen ? "✕" : "☰"}
-            </span>
+            <span className="font-typewriter text-sm font-bold">{mobileMenuOpen ? "✕" : "☰"}</span>
           </button>
         </header>
 
@@ -1063,6 +1074,9 @@ function ContactPage() {
           </div>
         )}
 
+        {/* ================================================================ */}
+        {/* DESKTOP & TABLET EVIDENCE BOARD (>= 768px)                       */}
+        {/* ================================================================ */}
         <div
           className="board-vignette relative hidden w-full overflow-hidden select-none md:block"
           style={{
@@ -1082,6 +1096,7 @@ function ContactPage() {
             preserveAspectRatio="none"
             aria-hidden="true"
           >
+            {/* 1. Base physical thread */}
             <g
               stroke="oklch(0.38 0.14 26)"
               strokeWidth="1.2"
@@ -1103,6 +1118,8 @@ function ContactPage() {
                 />
               ))}
             </g>
+
+            {/* 2. Capillary wall darkening & stain */}
             <g fill="none" style={{ mixBlendMode: "multiply" }}>
               {THREAD_SEGMENTS.map((seg, i) => (
                 <path
@@ -1131,6 +1148,8 @@ function ContactPage() {
                 />
               ))}
             </g>
+
+            {/* 3. Dense viscous crimson blood core */}
             <g fill="none">
               {THREAD_SEGMENTS.map((seg, i) => (
                 <path
@@ -1160,6 +1179,8 @@ function ContactPage() {
                 />
               ))}
             </g>
+
+            {/* 4. Subtle wet specular micro-highlight */}
             <g fill="none">
               {THREAD_SEGMENTS.map((seg, i) => (
                 <path
@@ -1190,6 +1211,8 @@ function ContactPage() {
               ))}
             </g>
           </svg>
+
+          {/* MAP */}
           <div
             tabIndex={0}
             role="button"
@@ -1221,6 +1244,8 @@ function ContactPage() {
               className="paper-shadow h-full w-full object-cover rotate-[4deg] opacity-90 brightness-[0.68] sepia-[0.4] transition-all duration-300 hover:brightness-[0.82]"
             />
           </div>
+
+          {/* CONTACT NOTE */}
           <div
             tabIndex={0}
             role="button"
@@ -1273,6 +1298,8 @@ function ContactPage() {
               We&apos;re listening.
             </p>
           </div>
+
+          {/* PHOTOGRAPHS */}
           <Photo
             evidence={EVIDENCE_DATA["photo-terminal"]}
             className="left-[27%] top-[3%] w-[14%]"
@@ -1330,6 +1357,8 @@ function ContactPage() {
             onMouseEnter={() => setHoveredId("photo-hangar")}
             onMouseLeave={() => setHoveredId(null)}
           />
+
+          {/* SMALL FILED DOCUMENT: CASE FILE 07-B */}
           <div
             tabIndex={0}
             role="button"
@@ -1366,6 +1395,8 @@ function ContactPage() {
               CLEARANCE: RED
             </p>
           </div>
+
+          {/* PINS ON THE STRING NETWORK */}
           {PIN_DATA.map((pin) => (
             <Pin
               key={pin.id}
@@ -1380,6 +1411,8 @@ function ContactPage() {
               onMouseLeave={() => setHoveredId(null)}
             />
           ))}
+
+          {/* COORDINATE NOTE */}
           <div
             tabIndex={0}
             role="button"
@@ -1415,6 +1448,8 @@ function ContactPage() {
               76.5121° E
             </p>
           </div>
+
+          {/* MAIN DOCUMENT: CONTACT FORM */}
           <section
             className={`evidence-interactive absolute right-[6%] top-[4%] z-10 w-[38%] min-w-[260px] lg:min-w-[330px] rotate-[-0.6deg] p-5 lg:px-8 lg:py-6 ${
               isItemDimmed("main-doc") ? "evidence-dimmed" : "evidence-highlighted"
@@ -1534,13 +1569,31 @@ function ContactPage() {
             <ul className="mt-2.5 lg:mt-3 space-y-1.5 lg:space-y-2 font-typewriter text-[10px] lg:text-[11px] leading-5 text-ink/90">
               <li className="flex items-start gap-2 lg:gap-3">
                 <MailIcon />
-                <a href="mailto:intelx.taskforce@gmail.com" className="hover:underline">
-                  intelx.taskforce@gmail.com
+                <a href="mailto:lead_sc@thapar.edu" className="hover:underline">
+                  lead_sc@thapar.edu
                 </a>
               </li>
               <li className="flex items-start gap-2 lg:gap-3">
-                <PhoneIcon />
-                <span>+91 98765 43210</span>
+                <InstagramIcon />
+                <a
+                  href="https://www.instagram.com/lead_tiet/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  @lead_tiet
+                </a>
+              </li>
+              <li className="flex items-start gap-2 lg:gap-3">
+                <GithubIcon />
+                <a
+                  href="https://github.com/LEAD-Society-Thapar/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  LEAD-Society-Thapar
+                </a>
               </li>
               <li className="flex items-start gap-2 lg:gap-3">
                 <PinIcon />
@@ -1554,6 +1607,9 @@ function ContactPage() {
           </section>
         </div>
 
+        {/* ================================================================ */}
+        {/* MOBILE DEDICATED EVIDENCE BOARD (< 768px)                        */}
+        {/* ================================================================ */}
         <div
           ref={mobileBoardRef}
           className="board-vignette relative block w-full select-none p-3 sm:p-5 md:hidden"
@@ -1566,10 +1622,12 @@ function ContactPage() {
             if (activeEvidenceId) setActiveEvidenceId(null);
           }}
         >
+          {/* DYNAMIC RESPONSIVE SVG INVESTIGATION THREADS FOR MOBILE */}
           <svg
             className="pointer-events-none absolute inset-0 z-20 h-full w-full"
             aria-hidden="true"
           >
+            {/* 1. Base physical thread */}
             <g
               stroke="oklch(0.38 0.14 26)"
               strokeWidth="1.2"
@@ -1594,6 +1652,8 @@ function ContactPage() {
                 );
               })}
             </g>
+
+            {/* 2. Capillary wall darkening & stain */}
             <g fill="none" style={{ mixBlendMode: "multiply" }}>
               {mobileThreadPaths.map((d, i) => {
                 if (!d) return null;
@@ -1626,6 +1686,8 @@ function ContactPage() {
                 );
               })}
             </g>
+
+            {/* 3. Dense viscous crimson blood core */}
             <g fill="none">
               {mobileThreadPaths.map((d, i) => {
                 if (!d) return null;
@@ -1659,6 +1721,8 @@ function ContactPage() {
                 );
               })}
             </g>
+
+            {/* 4. Subtle wet specular micro-highlight */}
             <g fill="none">
               {mobileThreadPaths.map((d, i) => {
                 if (!d) return null;
@@ -1693,6 +1757,8 @@ function ContactPage() {
               })}
             </g>
           </svg>
+
+          {/* Top Memo Note */}
           <div
             tabIndex={0}
             role="button"
@@ -1724,17 +1790,20 @@ function ContactPage() {
               isHighlighted={isItemHighlighted("contact-note")}
               isActive={activeEvidenceId === "contact-note"}
             />
-            <h1 className="font-typewriter text-xl font-bold tracking-wide text-ink">
-              CONTACT US
-            </h1>
+            <h1 className="font-typewriter text-xl font-bold tracking-wide text-ink">CONTACT US</h1>
             <p className="mt-2 font-typewriter text-[11px] sm:text-xs leading-5 text-ink/85">
               Have a lead? Want to collaborate?
               <br />
               We&apos;re listening.
             </p>
           </div>
+
+          {/* -------------------------------------------------------------- */}
+          {/* MOBILE CLUSTER 1: SURVEILLANCE EVIDENCE (Row 1)               */}
+          {/* -------------------------------------------------------------- */}
           <div className="relative mb-5">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {/* Evidence 1: Terminal */}
               <div
                 tabIndex={0}
                 role="button"
@@ -1768,6 +1837,8 @@ function ContactPage() {
                   <span>[INSPECT]</span>
                 </div>
               </div>
+
+              {/* Evidence 2: Cargo Freighter */}
               <div
                 tabIndex={0}
                 role="button"
@@ -1803,8 +1874,13 @@ function ContactPage() {
               </div>
             </div>
           </div>
+
+          {/* -------------------------------------------------------------- */}
+          {/* MOBILE CLUSTER 2: FLIGHT VECTORS (Row 2)                       */}
+          {/* -------------------------------------------------------------- */}
           <div className="relative mb-5">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {/* Evidence 3: Airliner Approach */}
               <div
                 tabIndex={0}
                 role="button"
@@ -1838,6 +1914,8 @@ function ContactPage() {
                   <span>[INSPECT]</span>
                 </div>
               </div>
+
+              {/* Evidence 4: Auxiliary Airstrip */}
               <div
                 tabIndex={0}
                 role="button"
@@ -1873,8 +1951,13 @@ function ContactPage() {
               </div>
             </div>
           </div>
+
+          {/* -------------------------------------------------------------- */}
+          {/* MOBILE CLUSTER 3: TARGET & MANIFEST (Row 3)                    */}
+          {/* -------------------------------------------------------------- */}
           <div className="relative mb-5">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {/* Evidence 5: Hangar 14 */}
               <div
                 tabIndex={0}
                 role="button"
@@ -1908,6 +1991,8 @@ function ContactPage() {
                   <span>[INSPECT]</span>
                 </div>
               </div>
+
+              {/* Document 6: Case File 07-B */}
               <div
                 tabIndex={0}
                 role="button"
@@ -1948,8 +2033,13 @@ function ContactPage() {
               </div>
             </div>
           </div>
+
+          {/* -------------------------------------------------------------- */}
+          {/* MOBILE CLUSTER 4: COORDINATE NOTE & SECTOR MAP (Row 4)        */}
+          {/* -------------------------------------------------------------- */}
           <div className="relative mb-6">
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              {/* Document 7: Coordinate Note */}
               <div
                 tabIndex={0}
                 role="button"
@@ -1984,6 +2074,8 @@ function ContactPage() {
                   Patiala Sector Beacon
                 </span>
               </div>
+
+              {/* Map Card 8: Sector Map */}
               <div
                 tabIndex={0}
                 role="button"
@@ -2019,6 +2111,10 @@ function ContactPage() {
               </div>
             </div>
           </div>
+
+          {/* -------------------------------------------------------------- */}
+          {/* MAIN DISPATCH DOCUMENT (CONTACT FORM ON MOBILE)               */}
+          {/* -------------------------------------------------------------- */}
           <section
             className="evidence-interactive paper-shadow relative mx-auto mt-6 w-full max-w-sm rotate-[-0.6deg] p-4 sm:p-6 text-ink"
             onClick={(e) => e.stopPropagation()}
@@ -2031,7 +2127,11 @@ function ContactPage() {
                 backgroundPosition: "center",
               }}
             />
-            <Pin dataPinNode="pin-mob-doc" className="left-[6%] top-[-8px]" label="Top Left Form Pin" />
+            <Pin
+              dataPinNode="pin-mob-doc"
+              className="left-[6%] top-[-8px]"
+              label="Top Left Form Pin"
+            />
             <Pin className="right-[6%] top-[-8px]" label="Top Right Form Pin" />
 
             <h2 className="font-typewriter text-base sm:text-lg tracking-wide text-ink">
@@ -2140,13 +2240,31 @@ function ContactPage() {
             <ul className="mt-2.5 space-y-1.5 font-typewriter text-[11px] leading-5 text-ink/90">
               <li className="flex items-start gap-2.5">
                 <MailIcon />
-                <a href="mailto:intelx.taskforce@gmail.com" className="hover:underline">
-                  intelx.taskforce@gmail.com
+                <a href="mailto:lead_sc@thapar.edu" className="hover:underline">
+                  lead_sc@thapar.edu
                 </a>
               </li>
               <li className="flex items-start gap-2.5">
-                <PhoneIcon />
-                <span>+91 98765 43210</span>
+                <InstagramIcon />
+                <a
+                  href="https://www.instagram.com/lead_tiet/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  @lead_tiet
+                </a>
+              </li>
+              <li className="flex items-start gap-2.5">
+                <GithubIcon />
+                <a
+                  href="https://github.com/LEAD-Society-Thapar/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  LEAD-Society-Thapar
+                </a>
               </li>
               <li className="flex items-start gap-2.5">
                 <PinIcon />
@@ -2183,42 +2301,50 @@ const iconClass = "mt-[2px] h-3.5 w-3.5 shrink-0 stroke-ink";
 
 function MailIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      strokeWidth="1.6"
-      className={iconClass}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" className={iconClass} aria-hidden="true">
       <rect x="2.5" y="5" width="19" height="14" />
       <path d="M2.5 6l9.5 7 9.5-7" />
     </svg>
   );
 }
 
-function PhoneIcon() {
+function InstagramIcon() {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
       className={iconClass}
       aria-hidden="true"
     >
-      <path d="M5 3h4l2 5-2.5 1.5a12 12 0 006 6L16 13l5 2v4a2 2 0 01-2 2A16 16 0 013 5a2 2 0 012-2z" />
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
+function GithubIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={iconClass}
+      aria-hidden="true"
+    >
+      <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
     </svg>
   );
 }
 
 function PinIcon() {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      strokeWidth="1.6"
-      className={iconClass}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.6" className={iconClass} aria-hidden="true">
       <path d="M12 21s7-6.3 7-11a7 7 0 10-14 0c0 4.7 7 11 7 11z" />
       <circle cx="12" cy="10" r="2.5" />
     </svg>
